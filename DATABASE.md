@@ -35,6 +35,17 @@ npx supabase db push
 
 Las migraciones iniciales ya fueron aplicadas al proyecto remoto mediante `npx supabase db push`.
 
+## Migración del piloto de reservas
+
+`supabase/migrations/20261005000100_booking_platform_pilot.sql`:
+
+- `products`: tipo de alojamiento, unidad de precio (`per_stay` / `per_night` / `per_person`), capacidad, noches mín./máx., servicios (`amenities`), extras con precio (`extras` jsonb), condiciones, política de cancelación, check-in/out, fechas disponibles, dirección y coordenadas, verificación (`verified_at`, `verification_summary`), valoración de Google copiada a mano y `translations`.
+- Se ponen a 0 las valoraciones de demostración (`rating`, `review_count`).
+- `destinations`: ciudades canónicas con página propia. Las ofertas existentes se reasignan a su ciudad.
+- `bookings`: código `OFZ-XXXXXX`, teléfono, fechas, personas, notas, idioma, atribución UTM y notas internas. `traveler_id` pasa a ser opcional (reserva sin cuenta).
+- Funciones: `create_booking_request`, `get_booking_by_code`, `offer_remaining_units` y el trigger `enforce_booking_transition`.
+- `provider_applications` y el bucket privado `provider-applications`.
+
 ## Siguiente migración
 
 El ledger de doble entrada, pagos, reembolsos, comisiones, cuentas bancarias y payouts deben añadirse en una migración separada, con pruebas de invariantes financieros antes de activar operaciones reales.
