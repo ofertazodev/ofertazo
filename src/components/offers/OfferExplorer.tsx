@@ -8,13 +8,16 @@ import { plural } from "@/i18n/format";
 import { AMENITIES, PROPERTY_TYPES, listingState, type Amenity, type Destination, type Listing, type ProductType, type PropertyType } from "@/lib/listing";
 import { discountPercent } from "@/lib/money";
 import { OfferRow } from "./OfferRow";
+import { PRICE_MAX, PRICE_MIN, PriceRange } from "./PriceRange";
 
 export type ExplorerFilters = {
   q: string;
   destination: string;
   type: ProductType | "";
   propertyType: PropertyType | "";
-  maxPrice: string;
+  /** Whole Bs; PRICE_MIN / PRICE_MAX mean "no limit" on that side. */
+  minPrice: number;
+  maxPrice: number;
   amenities: Amenity[];
   minRating: string;
   checkIn: string;
@@ -23,7 +26,7 @@ export type ExplorerFilters = {
   flashOnly: boolean;
 };
 
-export const emptyFilters: ExplorerFilters = { q: "", destination: "", type: "", propertyType: "", maxPrice: "", amenities: [], minRating: "", checkIn: "", checkOut: "", guests: "", flashOnly: false };
+export const emptyFilters: ExplorerFilters = { q: "", destination: "", type: "", propertyType: "", minPrice: PRICE_MIN, maxPrice: PRICE_MAX, amenities: [], minRating: "", checkIn: "", checkOut: "", guests: "", flashOnly: false };
 
 type Sort = "recommended" | "price_asc" | "price_desc" | "discount" | "rating";
 const SORTS: Sort[] = ["recommended", "price_asc", "price_desc", "discount", "rating"];
@@ -70,13 +73,15 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
 
   const results = useMemo(() => {
     const query = normalize(filters.q.trim());
-    const maxMinor = filters.maxPrice ? BigInt(Math.round(Number(filters.maxPrice))) * BigInt(100) : null;
+    const minMinor = filters.minPrice > PRICE_MIN ? BigInt(filters.minPrice) * BigInt(100) : null;
+    const maxMinor = filters.maxPrice < PRICE_MAX ? BigInt(filters.maxPrice) * BigInt(100) : null;
     const guests = Number(filters.guests) || 0;
     const filtered = base.filter((listing) => {
       if (query && !normalize(`${listing.title} ${listing.destination?.name ?? ""}`).includes(query)) return false;
       if (filters.destination && listing.destination?.slug !== filters.destination) return false;
       if (filters.type && listing.type !== filters.type) return false;
       if (filters.propertyType && listing.propertyType !== filters.propertyType) return false;
+      if (minMinor !== null && listing.promo.amount < minMinor) return false;
       if (maxMinor !== null && listing.promo.amount > maxMinor) return false;
       if (filters.amenities.some((amenity) => !listing.amenities.includes(amenity))) return false;
       if (filters.minRating && (listing.googleRating ?? 0) < Number(filters.minRating)) return false;
@@ -97,11 +102,12 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
   }, [filters, base, sort]);
 
   const count = <T,>(pick: (listing: Listing) => T, value: T) => base.filter((listing) => pick(listing) === value).length;
-  const activeCount = Object.entries(filters).filter(([, value]) => (Array.isArray(value) ? value.length > 0 : Boolean(value))).length;
+  const activeCount = Object.entries(filters).filter(([key, value]) => (key === "minPrice" ? value !== PRICE_MIN : key === "maxPrice" ? value !== PRICE_MAX : Array.isArray(value) ? value.length > 0 : Boolean(value))).length;
+  const prices = base.map((listing) => Number(listing.promo.amount / BigInt(100)));
   const sortLabels: Record<Sort, string> = { recommended: t.sortRecommended, price_asc: t.sortPriceAsc, price_desc: t.sortPriceDesc, discount: t.sortDiscount, rating: t.sortRating };
   const typeOptions = mode === "offers"
     ? (["accommodation", "package", "tour"] as const).map((type) => ({ value: type, label: dict.types[type], n: count((listing) => listing.type, type) }))
-    : PROPERTY_TYPES.map((type) => ({ value: type, label: dict.propertyTypes[type], n: count((listing) => listing.propertyType, type) }));
+    : PROPERTY_TYPES.map((type) => ({ value: type, label: dict.propertyTypeGroups[type], n: count((listing) => listing.propertyType, type) }));
   const typeValue = mode === "offers" ? filters.type : filters.propertyType;
   const setType = (value: string) => (mode === "offers" ? set("type", value as ProductType | "") : set("propertyType", value as PropertyType | ""));
 
@@ -125,20 +131,24 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
 
         {destinations.length > 0 && (
           <section className="filter-group">
-            <h3>{t.destination}</h3>
-            <OptionList name="destination" value={filters.destination} onChange={(value) => set("destination", value)} allLabel={t.allDestinations} allCount={base.length}
-              options={destinations.map((destination) => ({ value: destination.slug, label: destination.name, n: count((listing) => listing.destination?.slug, destination.slug) }))} />
+            <h3>{t.places}</h3>
+            <select value={filters.destination} onChange={(event) => set("destination", event.target.value)} aria-label={t.places}>
+              <option value="">{t.allPlaces} ({base.length})</option>
+              {destinations.map((destination) => <option key={destination.slug} value={destination.slug}>{destination.name} ({count((listing) => listing.destination?.slug, destination.slug)})</option>)}
+            </select>
           </section>
         )}
 
         <section className="filter-group">
           <h3>{mode === "offers" ? t.type : t.propertyType}</h3>
-          <OptionList name="type" value={typeValue} onChange={setType} allLabel={mode === "offers" ? t.allTypes : t.allPropertyTypes} allCount={base.length} options={typeOptions} />
+          <OptionList name="type" value={typeValue} onChange={setType} allLabel={mode === "offers" ? t.allTypes : t.allPropertyTypes} allCount={base.length} options={typeOptions} showEmpty />
         </section>
 
         <section className="filter-group">
-          <h3>{t.maxPrice}</h3>
-          <input type="number" min={0} step={50} value={filters.maxPrice} onChange={(event) => set("maxPrice", event.target.value)} aria-label={t.maxPrice} />
+          <h3>{t.priceTitle}</h3>
+          <PriceRange prices={prices} min={filters.minPrice} max={filters.maxPrice} locale={locale}
+            onChange={(min, max) => setFilters((current) => ({ ...current, minPrice: min, maxPrice: max }))}
+            labels={{ title: t.priceTitle, min: t.priceMin, max: t.priceMax, hint: t.priceHint, hintOne: t.priceHintOne }} />
         </section>
 
         <section className="filter-group">
@@ -184,11 +194,11 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
 type Option = { value: string; label: string; n: number };
 
 /** Single-choice filter shown as a radio list with result counts. */
-function OptionList({ name, value, onChange, allLabel, allCount, options }: { name: string; value: string; onChange: (value: string) => void; allLabel: string; allCount?: number; options: Option[] }) {
+function OptionList({ name, value, onChange, allLabel, allCount, options, showEmpty = false }: { name: string; value: string; onChange: (value: string) => void; allLabel: string; allCount?: number; options: Option[]; showEmpty?: boolean }) {
   return (
     <ul className="option-list">
       <li><label className="option"><input type="radio" name={name} checked={value === ""} onChange={() => onChange("")} /> <span>{allLabel}</span> {allCount !== undefined && <small>{allCount}</small>}</label></li>
-      {options.filter((option) => option.n > 0 || option.value === value).map((option) => (
+      {options.filter((option) => showEmpty || option.n > 0 || option.value === value).map((option) => (
         <li key={option.value}><label className="option"><input type="radio" name={name} checked={value === option.value} onChange={() => onChange(option.value)} /> <span>{option.label}</span> <small>{option.n}</small></label></li>
       ))}
     </ul>

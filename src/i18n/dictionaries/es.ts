@@ -56,14 +56,24 @@ export const es = {
   types: { accommodation: "Alojamiento", tour: "Experiencia", package: "Escapada" },
   propertyTypes: {
     hotel: "Hotel",
-    boutique_hotel: "Hotel boutique",
-    resort: "Resort",
-    lodge: "Lodge",
-    villa: "Villa",
     apartment: "Departamento",
-    vacation_home: "Casa vacacional",
-    hostel: "Hostal",
-    cabin: "Cabaña"
+    house_villa: "Casa / villa",
+    hostel: "Hostal / residencial",
+    ecolodge: "Ecolodge / rural",
+    cabin: "Cabaña / bungalow",
+    boutique_hotel: "Hotel boutique",
+    glamping: "Glamping"
+  },
+  /** Plural group names used by the search filter. */
+  propertyTypeGroups: {
+    hotel: "Hoteles",
+    apartment: "Departamentos",
+    house_villa: "Casas y villas",
+    hostel: "Hostales y residenciales",
+    ecolodge: "Ecolodges y alojamientos rurales",
+    cabin: "Cabañas y bungalows",
+    boutique_hotel: "Hoteles boutique",
+    glamping: "Glamping"
   },
   amenities: {
     wifi: "Wi-Fi",
@@ -169,6 +179,13 @@ export const es = {
     searchByName: "Nombre del alojamiento",
     priceLabel: "Precio final",
     seeDetail: "Ver detalle",
+    places: "Lugares",
+    allPlaces: "Todos los lugares",
+    priceTitle: "Precio (Bs)",
+    priceMin: "Mín.",
+    priceMax: "Máx.",
+    priceHint: "{n} ofertas en este rango",
+    priceHintOne: "1 oferta en este rango",
     empty: "No encontramos ofertas con estos filtros."
   },
   offer: {

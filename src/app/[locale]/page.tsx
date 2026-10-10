@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Compass, MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
+import { BrandIcon, type BrandIconName } from "@/components/site/BrandIcons";
 import { DestinationCard } from "@/components/destinations/DestinationCard";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { OfferCard } from "@/components/offers/OfferCard";
@@ -13,7 +14,7 @@ import { explorerInitial, type SearchParams } from "@/lib/search-params";
 // The accommodation search reads ?q=, ?in=, ?out=, ?g= from the URL, so it renders per request.
 export const dynamic = "force-dynamic";
 
-const trustIcons = [BadgeCheck, Sparkles, MessageCircle];
+const trustIcons: BrandIconName[] = ["verified", "fairPrice", "support"];
 
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<SearchParams> };
 
@@ -98,8 +99,7 @@ export default async function HomePage({ params, searchParams }: Props) {
           </div>
           <div className="trust-points">
             {t.trustPoints.map((point, index) => {
-              const Icon = trustIcons[index] ?? ShieldCheck;
-              return <div key={point.title}><Icon /><h3>{point.title}</h3><p>{point.text}</p></div>;
+              return <div key={point.title}><span className="trust-icon"><BrandIcon name={trustIcons[index] ?? "verified"} size={34} /></span><h3>{point.title}</h3><p>{point.text}</p></div>;
             })}
           </div>
         </div>

@@ -56,14 +56,24 @@ export const en: Dictionary = {
   types: { accommodation: "Stay", tour: "Experience", package: "Getaway" },
   propertyTypes: {
     hotel: "Hotel",
-    boutique_hotel: "Boutique hotel",
-    resort: "Resort",
-    lodge: "Lodge",
-    villa: "Villa",
     apartment: "Apartment",
-    vacation_home: "Vacation home",
-    hostel: "Hostel",
-    cabin: "Cabin"
+    house_villa: "House / villa",
+    hostel: "Hostel / guesthouse",
+    ecolodge: "Ecolodge / rural",
+    cabin: "Cabin / bungalow",
+    boutique_hotel: "Boutique hotel",
+    glamping: "Glamping"
+  },
+  /** Plural group names used by the search filter. */
+  propertyTypeGroups: {
+    hotel: "Hotels",
+    apartment: "Apartments",
+    house_villa: "Houses and villas",
+    hostel: "Hostels and guesthouses",
+    ecolodge: "Ecolodges and rural stays",
+    cabin: "Cabins and bungalows",
+    boutique_hotel: "Boutique hotels",
+    glamping: "Glamping"
   },
   amenities: {
     wifi: "Wi-Fi",
@@ -169,6 +179,13 @@ export const en: Dictionary = {
     searchByName: "Property name",
     priceLabel: "Final price",
     seeDetail: "See details",
+    places: "Places",
+    allPlaces: "All places",
+    priceTitle: "Price (Bs)",
+    priceMin: "Min",
+    priceMax: "Max",
+    priceHint: "{n} deals in this range",
+    priceHintOne: "1 deal in this range",
     empty: "No deals match these filters."
   },
   offer: {

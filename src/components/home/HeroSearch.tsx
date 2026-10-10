@@ -3,7 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BedDouble, CalendarDays, ChevronLeft, ChevronRight, Luggage, MapPin, Mountain, Search, ShieldCheck, Tag, Users, Zap, type LucideIcon } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Search, ShieldCheck, Users } from "lucide-react";
+import { BrandIcon, type BrandIconName } from "@/components/site/BrandIcons";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import { href } from "@/i18n/format";
@@ -20,8 +21,8 @@ const heroSlides = [
 
 /** Search tabs change what "Buscar" looks for; link tabs just navigate. */
 type Category =
-  | { kind: "search"; id: ProductType; label: string; icon: LucideIcon }
-  | { kind: "link"; id: string; label: string; icon: LucideIcon; path: string };
+  | { kind: "search"; id: ProductType; label: string; icon: BrandIconName }
+  | { kind: "link"; id: string; label: string; icon: BrandIconName; path: string };
 
 export function HeroSearch({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const home = dict.home;
@@ -43,12 +44,12 @@ export function HeroSearch({ locale, dict }: { locale: Locale; dict: Dictionary 
   }, [paused]);
 
   const categories: Category[] = [
-    { kind: "search", id: "accommodation", label: home.tabAccommodations, icon: BedDouble },
-    { kind: "search", id: "package", label: home.tabPackages, icon: Luggage },
-    { kind: "search", id: "tour", label: home.tabTours, icon: Mountain },
-    { kind: "link", id: "flash", label: dict.nav.flash, icon: Zap, path: "/ofertas?flash=1" },
-    { kind: "link", id: "all", label: home.tabAll, icon: Tag, path: "/ofertas" },
-    { kind: "link", id: "destinations", label: dict.nav.destinations, icon: MapPin, path: "/destinos" }
+    { kind: "search", id: "accommodation", label: home.tabAccommodations, icon: "bed" },
+    { kind: "search", id: "package", label: home.tabPackages, icon: "backpack" },
+    { kind: "search", id: "tour", label: home.tabTours, icon: "mountain" },
+    { kind: "link", id: "flash", label: dict.nav.flash, icon: "bolt", path: "/ofertas?flash=1" },
+    { kind: "link", id: "all", label: home.tabAll, icon: "tag", path: "/ofertas" },
+    { kind: "link", id: "destinations", label: dict.nav.destinations, icon: "pin", path: "/destinos" }
   ];
   const current = categories.find((item) => item.kind === "search" && item.id === category);
 
@@ -75,8 +76,7 @@ export function HeroSearch({ locale, dict }: { locale: Locale; dict: Dictionary 
         <div className="shell">
           <nav className="hub-tabs" aria-label={dict.nav.offers}>
             {categories.map((item) => {
-              const Icon = item.icon;
-              const content = <><span className="hub-tab-icon"><Icon size={24} /></span><span>{item.label}</span></>;
+              const content = <><span className="hub-tab-icon"><BrandIcon name={item.icon} size={28} /></span><span>{item.label}</span></>;
               return item.kind === "search"
                 ? <button key={item.id} type="button" className={`hub-tab ${item.id === category ? "active" : ""}`} aria-pressed={item.id === category} onClick={() => setCategory(item.id)}>{content}</button>
                 : <Link key={item.id} className="hub-tab" href={href(locale, item.path)}>{content}</Link>;

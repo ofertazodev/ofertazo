@@ -2,7 +2,7 @@
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import type { Money } from "./money";
 
-export const PROPERTY_TYPES = ["hotel", "boutique_hotel", "resort", "lodge", "villa", "apartment", "vacation_home", "hostel", "cabin"] as const;
+export const PROPERTY_TYPES = ["hotel", "apartment", "house_villa", "hostel", "ecolodge", "cabin", "boutique_hotel", "glamping"] as const;
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
 export const AMENITIES = ["wifi", "breakfast", "pool", "parking", "air_conditioning", "heating", "kitchen", "pets", "spa", "restaurant", "airport_transfer", "view", "garden", "bbq"] as const;

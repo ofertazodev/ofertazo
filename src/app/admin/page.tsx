@@ -2,21 +2,23 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, LogOut, Package, ShieldAlert } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, LogOut, MapPin, Package, ShieldAlert } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 import { BookingsPanel } from "@/components/admin/BookingsPanel";
+import { DestinationsPanel } from "@/components/admin/DestinationsPanel";
 import { OffersPanel } from "@/components/admin/OffersPanel";
 import { OverviewPanel } from "@/components/admin/OverviewPanel";
 import { supabase } from "@/lib/supabase-browser";
 import { LlamaLoader, TripyaLogo } from "@/components/site/TripyaLogo";
 
-type Tab = "overview" | "bookings" | "offers" | "applications";
+type Tab = "overview" | "bookings" | "offers" | "destinations" | "applications";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "overview", label: "Resumen", icon: BarChart3 },
   { id: "bookings", label: "Reservas", icon: CalendarCheck },
   { id: "offers", label: "Ofertas", icon: Package },
+  { id: "destinations", label: "Destinos", icon: MapPin },
   { id: "applications", label: "Proveedores", icon: BriefcaseBusiness }
 ];
 
@@ -103,6 +105,7 @@ export default function AdminPage() {
         {tab === "overview" && <OverviewPanel onNavigate={setTab} />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "offers" && <OffersPanel user={user} />}
+        {tab === "destinations" && <DestinationsPanel />}
         {tab === "applications" && <ApplicationsPanel />}
       </section>
     </main>

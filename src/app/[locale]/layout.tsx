@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import "../platform.css";
+import { fontVariables } from "../fonts";
 import { Analytics } from "@/components/site/Analytics";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale, dict } = await resolveLocale(params);
   return (
-    <html lang={locale}>
+    <html lang={locale} className={fontVariables}>
       <body>
         <Header locale={locale} nav={dict.nav} auth={dict.auth} />
         <main>{children}</main>
