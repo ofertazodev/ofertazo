@@ -26,7 +26,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const query = await searchParams;
   const listing = await getListingBySlug(slug, locale);
   if (!listing) notFound();
-  if (listingState(listing) !== "active") redirect(href(locale, `/ofertas/${slug}`));
+  if (listingState(listing) !== "active" || listing.isSample) redirect(href(locale, `/ofertas/${slug}`));
 
   const offerUrl = `${siteUrl}/${locale}/ofertas/${slug}`;
   return (

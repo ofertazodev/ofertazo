@@ -19,6 +19,7 @@ export const es = {
     language: "Idioma"
   },
   common: {
+    sample: "EJEMPLO",
     from: "Desde",
     perNight: "/ noche",
     perPerson: "/ persona",
@@ -223,6 +224,7 @@ export const es = {
     verifiedLink: "Qué verificamos",
     googleSource: "Valoración en Google Maps",
     priceNote: "Precio final calculado al reservar. Sin cargos ocultos.",
+    sampleNote: "Esta es una oferta de ejemplo para mostrar cómo funciona Tripya. Todavía no se puede reservar: muy pronto publicaremos ofertas reales como esta.",
     notBookable: "Esta oferta no admite reservas en este momento.",
     shareTitle: "Mira esta oferta en Tripya"
   },

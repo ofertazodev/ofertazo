@@ -19,6 +19,7 @@ export const fr: Dictionary = {
     language: "Langue"
   },
   common: {
+    sample: "EXEMPLE",
     from: "À partir de",
     perNight: "/ nuit",
     perPerson: "/ personne",
@@ -223,6 +224,7 @@ export const fr: Dictionary = {
     verifiedLink: "Ce que nous vérifions",
     googleSource: "Note sur Google Maps",
     priceNote: "Prix final calculé lors de la réservation. Aucun frais caché.",
+    sampleNote: "Ceci est une offre d'exemple pour montrer le fonctionnement de Tripya. Elle n'est pas encore réservable : de vraies offres comme celle-ci arrivent bientôt.",
     notBookable: "Cette offre ne peut pas être réservée pour le moment.",
     shareTitle: "Regardez cette offre"
   },

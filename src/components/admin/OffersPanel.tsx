@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Copy, Eye, EyeOff, Link2, Pencil, Plus, RefreshCw } from "lucide-react";
+import { Copy, Eye, EyeOff, Link2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { formatMoney, money } from "@/lib/money";
 import { supabase } from "@/lib/supabase-browser";
@@ -17,7 +17,7 @@ type OfferRow = {
   promotional_price_minor: number;
   currency_code: string;
   ends_at: string | null;
-  product: { id: string; slug: string; title: string; type: string; is_published: boolean; verified_at: string | null; destination: { name: string } | null } | null;
+  product: { id: string; slug: string; title: string; type: string; is_published: boolean; verified_at: string | null; is_sample?: boolean; destination: { name: string } | null } | null;
 };
 
 const SOURCES = [
@@ -46,7 +46,7 @@ export function OffersPanel({ user }: { user: User }) {
     if (!supabase) return;
     const { data, error } = await supabase
       .from("offers")
-      .select("id,title,kind,is_published,featured,original_price_minor,promotional_price_minor,currency_code,ends_at,product:products(id,slug,title,type,is_published,verified_at,destination:destinations(name))")
+      .select("id,title,kind,is_published,featured,original_price_minor,promotional_price_minor,currency_code,ends_at,product:products(*,destination:destinations(name))")
       .order("created_at", { ascending: false });
     if (error) { setMessage(error.message); return; }
     const list = (data ?? []) as unknown as OfferRow[];
@@ -67,6 +67,25 @@ export function OffersPanel({ user }: { user: User }) {
     void load();
   }
 
+  // Only sample offers can be deleted here: real ones may have bookings and are hidden instead.
+  async function removeSample(row: OfferRow) {
+    if (!supabase || !row.product?.is_sample) return;
+    if (!window.confirm(`¿Eliminar la oferta de ejemplo «${row.product.title}»?`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", row.product.id);
+    setMessage(error?.message ?? "Oferta de ejemplo eliminada.");
+    void load();
+  }
+
+  async function removeAllSamples() {
+    if (!supabase) return;
+    const ids = rows.filter((row) => row.product?.is_sample).map((row) => row.product!.id);
+    if (!ids.length || !window.confirm(`¿Eliminar las ${ids.length} ofertas de ejemplo? Las ofertas reales no se tocan.`)) return;
+    const { error } = await supabase.from("products").delete().in("id", ids);
+    setMessage(error?.message ?? "Ofertas de ejemplo eliminadas.");
+    void load();
+  }
+
+  const sampleCount = rows.filter((row) => row.product?.is_sample).length;
   const source = SOURCES.find((item) => item.value === linkSource) ?? SOURCES[0];
   const origin = typeof window === "undefined" ? "" : window.location.origin;
   const campaignLink = linkSlug
@@ -85,6 +104,7 @@ export function OffersPanel({ user }: { user: User }) {
         <h1>Ofertas</h1>
         <button className="dark-button" onClick={() => setEditing("new")}><Plus size={16} /> Nueva oferta</button>
         <button className="admin-action-link" onClick={() => void load()}><RefreshCw size={15} /> Actualizar</button>
+        {sampleCount > 0 && <button className="admin-action-link" onClick={() => void removeAllSamples()}><Trash2 size={15} /> Eliminar las {sampleCount} de ejemplo</button>}
       </div>
       {message && <p className="admin-notice">{message}</p>}
 
@@ -96,12 +116,13 @@ export function OffersPanel({ user }: { user: User }) {
               <b>{row.product?.title ?? row.title}</b>
               <span>{row.product?.destination?.name ?? "—"}</span>
               <span>{formatMoney(money(row.original_price_minor, row.currency_code), "es")} → <b>{formatMoney(money(row.promotional_price_minor, row.currency_code), "es")}</b></span>
-              <span>{row.kind === "flash" ? "⚡ Flash" : "Normal"}{row.featured ? " · Destacada" : ""}{row.product?.verified_at ? " · ✓ Verificada" : ""}</span>
+              <span>{row.product?.is_sample ? "Ejemplo · " : ""}{row.kind === "flash" ? "⚡ Flash" : "Normal"}{row.featured ? " · Destacada" : ""}{row.product?.verified_at ? " · ✓ Verificada" : ""}</span>
               <span className={`status-pill ${row.is_published ? "status-confirmed" : "status-expired"}`}>{row.is_published ? "Publicada" : "Oculta"}</span>
               <span className="admin-row-buttons">
                 <button onClick={() => setEditing(row.id)} aria-label="Editar"><Pencil size={15} /> Editar</button>
                 <button onClick={() => void togglePublished(row)}>{row.is_published ? <><EyeOff size={15} /> Ocultar</> : <><Eye size={15} /> Publicar</>}</button>
                 {row.product && <a href={`/es/ofertas/${row.product.slug}`} target="_blank" rel="noreferrer"><Link2 size={15} /> Ver</a>}
+                {row.product?.is_sample && <button onClick={() => void removeSample(row)}><Trash2 size={15} /> Eliminar</button>}
               </span>
             </div>
           </article>

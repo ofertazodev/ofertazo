@@ -57,7 +57,7 @@ export default async function OfferPage({ params }: Props) {
 
   const t = dict.offer;
   const state = listingState(listing);
-  const bookable = state === "active";
+  const bookable = state === "active" && !listing.isSample;
   const pct = discountPercent(listing.original, listing.promo);
   const saved = formatMoney(savings(listing.original, listing.promo), locale);
   const offerUrl = `${siteUrl}/${locale}/ofertas/${slug}`;
@@ -186,7 +186,7 @@ export default async function OfferPage({ params }: Props) {
             </div>
             {hasCountdown(listing) && state !== "ended" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} />}
             <StateNote listing={listing} locale={locale} dict={dict} />
-            {bookable ? <BookingQuickForm listing={listing} locale={locale} dict={dict} /> : <p className="form-message">{t.notBookable}</p>}
+            {bookable ? <BookingQuickForm listing={listing} locale={locale} dict={dict} /> : <p className={listing.isSample ? "sample-note" : "form-message"}>{listing.isSample ? t.sampleNote : t.notBookable}</p>}
             <p className="fine-print">{t.priceNote}</p>
             <div className="price-card-help">
               <p>{dict.whatsapp.offerCta}</p>

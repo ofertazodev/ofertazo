@@ -19,6 +19,7 @@ export const en: Dictionary = {
     language: "Language"
   },
   common: {
+    sample: "SAMPLE",
     from: "From",
     perNight: "/ night",
     perPerson: "/ person",
@@ -223,6 +224,7 @@ export const en: Dictionary = {
     verifiedLink: "What we check",
     googleSource: "Rating on Google Maps",
     priceNote: "Final price calculated when booking. No hidden fees.",
+    sampleNote: "This is a sample deal showing how Tripya works. It can't be booked yet: real deals like this one are coming soon.",
     notBookable: "This deal can't be booked right now.",
     shareTitle: "Check out this deal"
   },

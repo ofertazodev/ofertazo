@@ -27,7 +27,7 @@ const emptyForm = {
   capacityMax: "", minNights: "1", maxNights: "", checkInTime: "", checkOutTime: "", stayFrom: "", stayTo: "",
   bookingConditions: "", cancellationPolicy: "",
   address: "", latitude: "", longitude: "",
-  verified: false, verificationSummary: "", googleRating: "", googleReviewCount: "", googleMapsUrl: "",
+  sample: false, verified: false, verificationSummary: "", googleRating: "", googleReviewCount: "", googleMapsUrl: "",
   providerName: "", providerEmail: "", providerPhone: "",
   enTitle: "", enDescription: "", frTitle: "", frDescription: ""
 };
@@ -65,7 +65,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
   const [media, setMedia] = useState<Media[]>([]);
   const [removedMedia, setRemovedMedia] = useState<Media[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
-  const [ids, setIds] = useState<{ productId: string | null; providerId: string | null; verifiedAt: string | null }>({ productId: null, providerId: null, verifiedAt: null });
+  const [ids, setIds] = useState<{ productId: string | null; providerId: string | null; verifiedAt: string | null; wasSample: boolean }>({ productId: null, providerId: null, verifiedAt: null, wasSample: false });
   const [loading, setLoading] = useState(Boolean(offerId));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -92,7 +92,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
       };
       const p = offer.product;
       const tr = (p.translations ?? {}) as Record<string, { title?: string; description?: string }>;
-      setIds({ productId: p.id, providerId: p.provider?.id ?? null, verifiedAt: (p.verified_at as string | null) ?? null });
+      setIds({ productId: p.id, providerId: p.provider?.id ?? null, verifiedAt: (p.verified_at as string | null) ?? null, wasSample: Boolean(p.is_sample) });
       setForm({
         title: String(p.title ?? offer.title), slug: String(p.slug ?? ""), type: p.type as ProductType, propertyType: String(p.property_type ?? ""), destinationId: String(p.destination_id ?? ""), newCity: "",
         description: String(p.description ?? ""), durationLabel: String(p.duration_label ?? ""), includes: ((p.includes as string[] | null) ?? []).join(", "),
@@ -102,7 +102,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
         stayFrom: String(p.stay_available_from ?? ""), stayTo: String(p.stay_available_to ?? ""),
         bookingConditions: String(p.booking_conditions ?? ""), cancellationPolicy: String(p.cancellation_policy ?? ""),
         address: String(p.address ?? ""), latitude: p.latitude?.toString() ?? "", longitude: p.longitude?.toString() ?? "",
-        verified: Boolean(p.verified_at), verificationSummary: String(p.verification_summary ?? ""), googleRating: p.google_rating?.toString() ?? "", googleReviewCount: p.google_review_count?.toString() ?? "", googleMapsUrl: String(p.google_maps_url ?? ""),
+        sample: Boolean(p.is_sample), verified: Boolean(p.verified_at), verificationSummary: String(p.verification_summary ?? ""), googleRating: p.google_rating?.toString() ?? "", googleReviewCount: p.google_review_count?.toString() ?? "", googleMapsUrl: String(p.google_maps_url ?? ""),
         providerName: p.provider?.trade_name ?? "", providerEmail: p.provider?.email ?? "", providerPhone: p.provider?.phone ?? "",
         enTitle: tr.en?.title ?? "", enDescription: tr.en?.description ?? "", frTitle: tr.fr?.title ?? "", frDescription: tr.fr?.description ?? ""
       });
@@ -211,6 +211,8 @@ export function OfferForm({ user, offerId, onClose }: Props) {
         google_maps_url: textOrNull(form.googleMapsUrl),
         translations,
         is_published: form.published,
+        // Only sent when editing a sample, so saving never depends on the is_sample migration.
+        ...(ids.wasSample ? { is_sample: form.sample } : {}),
         updated_at: new Date().toISOString()
       };
       let productId = ids.productId;
@@ -243,7 +245,8 @@ export function OfferForm({ user, offerId, onClose }: Props) {
       // 5. Photos: remove deleted, re-number kept, upload new
       for (const item of removedMedia) {
         await supabase.from("product_media").delete().eq("id", item.id);
-        await supabase.storage.from("offer-media").remove([item.storage_path]);
+        // Sample offers use external photos (storage_path "external/..."): nothing to delete from storage.
+        if (!item.storage_path.startsWith("external/")) await supabase.storage.from("offer-media").remove([item.storage_path]);
       }
       for (const [index, item] of media.entries()) {
         if (item.sort_order !== index) await supabase.from("product_media").update({ sort_order: index }).eq("id", item.id);
@@ -374,6 +377,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
 
       <fieldset>
         <legend>Confianza</legend>
+        {ids.wasSample && <label className="check-row"><input type="checkbox" checked={form.sample} onChange={(event) => set("sample", event.target.checked)} /> Oferta de ejemplo (se muestra con la etiqueta «Ejemplo» y no se puede reservar). Desmárcala si la conviertes en una oferta real.</label>}
         <label className="check-row"><input type="checkbox" checked={form.verified} onChange={(event) => set("verified", event.target.checked)} /> Verificado por Tripya (identidad, ubicación, fotos, servicios y condiciones comprobados)</label>
         <label>Qué verificamos (visible para el cliente)<input value={form.verificationSummary} onChange={(event) => set("verificationSummary", event.target.value)} placeholder="Ej. Visitado en persona el 12/10/2026. Fotos tomadas por Tripya." /></label>
         <div className="admin-form-grid three">

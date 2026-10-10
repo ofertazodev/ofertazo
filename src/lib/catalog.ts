@@ -50,14 +50,14 @@ type OfferRow = {
     translations: Translations | null;
     destination: { name: string; slug: string; translations: Translations | null } | null;
     product_media: { public_url: string | null; alt_text: string; sort_order: number }[] | null;
+    is_sample?: boolean;
   };
 };
 
+// products(*) instead of a column list so optional columns (e.g. is_sample) never break the query
+// if the app is deployed before their migration.
 const OFFER_SELECT = `id,kind,title,original_price_minor,promotional_price_minor,currency_code,starts_at,ends_at,max_units,featured,
-product:products!inner(id,slug,type,title,description,duration_label,includes,property_type,pricing_unit,capacity_max,min_nights,max_nights,
-amenities,extras,booking_conditions,cancellation_policy,check_in_time,check_out_time,stay_available_from,stay_available_to,address,latitude,longitude,
-verified_at,verification_summary,google_rating,google_review_count,google_maps_url,translations,
-destination:destinations(name,slug,translations),product_media(public_url,alt_text,sort_order))`;
+product:products!inner(*,destination:destinations(name,slug,translations),product_media(public_url,alt_text,sort_order))`;
 
 function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale): Listing {
   const p = row.product;
@@ -111,7 +111,8 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     remainingUnits: row.max_units === null ? null : remaining.get(row.id) ?? row.max_units,
     destination: p.destination ? { name: p.destination.translations?.[locale]?.name || p.destination.name.trim(), slug: p.destination.slug } : null,
     images,
-    untranslated: locale !== "es" && !tr?.title
+    untranslated: locale !== "es" && !tr?.title,
+    isSample: Boolean(p.is_sample)
   };
 }
 

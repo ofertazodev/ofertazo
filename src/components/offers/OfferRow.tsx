@@ -30,6 +30,7 @@ export function OfferRow({ listing, locale, dict, listName }: Props) {
         <div className="offer-row-image">
           {image ? <Image src={image.url} alt={image.alt} fill sizes="(max-width: 800px) 100vw, 300px" /> : <div className="image-placeholder" />}
           <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>
+          {listing.isSample && <span className="pill pill-sample">{dict.common.sample}</span>}
         </div>
         <div className="offer-row-body">
           <p className="offer-row-type">{subtitle}</p>

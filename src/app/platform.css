@@ -633,3 +633,8 @@ button.admin-metric { text-align:left; cursor:pointer; }
 .destination-form { margin:0; padding:16px; }
 @media (max-width:900px) { .admin-row-head.static.destination-row { grid-template-columns:1fr 1fr; } }
 .price-histogram span.empty { background:#f1ede5; }
+
+/* ---------- sample offers ---------- */
+.pill-sample { background:#fff; color:var(--ink); }
+.offer-row-image .pill-sample { left:auto; right:12px; }
+.sample-note { margin:0; padding:12px 14px; border-radius:8px; background:var(--cream); border:1px dashed #f3c9a8; color:var(--ink); font-size:13px; line-height:1.5; }

@@ -28,7 +28,7 @@ export function OfferCard({ listing, locale, dict, listName }: Props) {
           {image ? <Image src={image.url} alt={image.alt} fill sizes="(max-width: 800px) 100vw, 380px" /> : <div className="image-placeholder" />}
           <div className="offer-topline">
             <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>
-            {hasCountdown(listing) && state === "active" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} compact />}
+            {listing.isSample ? <span className="pill pill-sample">{dict.common.sample}</span> : hasCountdown(listing) && state === "active" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} compact />}
           </div>
           {listing.destination && <span className="image-location"><MapPin size={14} /> {listing.destination.name}</span>}
         </div>

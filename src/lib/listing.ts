@@ -57,6 +57,8 @@ export type Listing = {
   images: ListingImage[];
   /** True when the content (title/description) is shown in Spanish as a fallback. */
   untranslated: boolean;
+  /** Demo listing used to fill the catalog: labeled on the site and never bookable. */
+  isSample: boolean;
 };
 
 export type Destination = {
