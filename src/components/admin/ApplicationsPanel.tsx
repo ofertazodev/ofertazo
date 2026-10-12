@@ -2,7 +2,8 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { MessageCircle, RefreshCw } from "lucide-react";
+import { Handshake, MessageCircle, RefreshCw } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 import { formatDateTime } from "@/lib/dates";
 import { supabase } from "@/lib/supabase-browser";
 
@@ -41,7 +42,7 @@ const FIELDS: [keyof Application, string][] = [
   ["availability", "Disponibilidad"], ["conditions", "Condiciones"], ["message", "Mensaje"]
 ];
 
-export function ApplicationsPanel() {
+export function ApplicationsPanel({ user }: { user: User }) {
   const [rows, setRows] = useState<Application[]>([]);
   const [filter, setFilter] = useState<ApplicationStatus | "">("new");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -64,6 +65,20 @@ export function ApplicationsPanel() {
     if (!supabase || photos[row.id] || row.photo_paths.length === 0) return;
     const { data } = await supabase.storage.from("provider-applications").createSignedUrls(row.photo_paths, 3600);
     setPhotos((current) => ({ ...current, [row.id]: (data ?? []).map((item) => item.signedUrl).filter((url): url is string => Boolean(url)) }));
+  }
+
+  /** Creates a partner (admin → Socios) from the application and marks it approved. */
+  async function registerPartner(row: Application) {
+    if (!supabase) return;
+    const accommodation = !["agency", "tour", "package"].includes(row.property_type);
+    const { error } = await supabase.from("providers").insert({
+      trade_name: row.business_name, legal_name: row.business_name, partner_type: accommodation ? "hotel" : "agency",
+      contact_name: row.contact_name, email: row.email || user.email || "", phone: row.phone, website: row.website, city: row.city, address: row.address,
+      notes: row.admin_notes, application_id: row.id, owner_id: user.id, country_code: "BO", status: "approved"
+    });
+    if (error) { setMessage(error.message); return; }
+    await update(row, { status: "approved" });
+    setMessage(`«${row.business_name}» registrado como socio. Lo encuentras en la pestaña «Socios».`);
   }
 
   async function update(row: Application, changes: Partial<Pick<Application, "status" | "admin_notes">>) {
@@ -100,6 +115,7 @@ export function ApplicationsPanel() {
                     <dl className="review-list">{FIELDS.filter(([key]) => row[key]).map(([key, label]) => <Fragment key={key}><dt>{label}</dt><dd>{String(row[key])}</dd></Fragment>)}</dl>
                     {(photos[row.id] ?? []).length > 0 && <div className="admin-photos">{photos[row.id].map((url) => <a key={url} href={url} target="_blank" rel="noreferrer"><Image src={url} alt={row.business_name} width={160} height={120} unoptimized /></a>)}</div>}
                     <div className="admin-row-actions">
+                      <button className="admin-action-link" onClick={() => void registerPartner(row)}><Handshake size={15} /> Registrar como socio</button>
                       {digits.length >= 7 && <a className="admin-action-link" href={`https://wa.me/${digits}?text=${encodeURIComponent(`Hola ${row.contact_name.split(" ")[0]}, te escribimos de Tripya por tu solicitud para publicar ${row.business_name}.`)}`} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp</a>}
                       <label>Estado
                         <select value={row.status} onChange={(event) => void update(row, { status: event.target.value as ApplicationStatus })}>

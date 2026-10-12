@@ -55,13 +55,17 @@ function slugify(text: string) {
 const intOrNull = (value: string) => (value.trim() === "" ? null : Number.parseInt(value, 10));
 const textOrNull = (value: string) => value.trim() || null;
 
-type Props = { user: User; offerId: string | null; onClose: (savedMessage?: string) => void };
+type Props = { user: User; offerId: string | null; onClose: (savedMessage?: string) => void; /** New offer for this partner (from admin → Socios). */ presetProviderId?: string | null };
+type PartnerOption = { id: string; trade_name: string; city: string | null };
 
-export function OfferForm({ user, offerId, onClose }: Props) {
+export function OfferForm({ user, offerId, onClose, presetProviderId = null }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [extras, setExtras] = useState<ExtraDraft[]>([]);
   const [destinations, setDestinations] = useState<DestinationOption[]>([]);
+  const [partners, setPartners] = useState<PartnerOption[]>([]);
+  /** Selected partner id, or "new" to create one with the quick fields below. */
+  const [partnerChoice, setPartnerChoice] = useState<string>(presetProviderId ?? "new");
   const [media, setMedia] = useState<Media[]>([]);
   const [removedMedia, setRemovedMedia] = useState<Media[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
@@ -76,6 +80,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
     if (!supabase) return;
     const client = supabase;
     void client.from("destinations").select("id,name").eq("kind", "city").eq("is_published", true).not("slug", "like", "%-destination").order("sort_order").then(({ data }) => setDestinations((data ?? []) as DestinationOption[]));
+    void client.from("providers").select("id,trade_name,city").order("trade_name").then(({ data }) => setPartners((data ?? []) as PartnerOption[]));
     if (!offerId) return;
     void (async () => {
       const { data, error: loadError } = await client
@@ -92,6 +97,7 @@ export function OfferForm({ user, offerId, onClose }: Props) {
       };
       const p = offer.product;
       const tr = (p.translations ?? {}) as Record<string, { title?: string; description?: string }>;
+      if (p.provider?.id) setPartnerChoice(p.provider.id);
       setIds({ productId: p.id, providerId: p.provider?.id ?? null, verifiedAt: (p.verified_at as string | null) ?? null, wasSample: Boolean(p.is_sample) });
       setForm({
         title: String(p.title ?? offer.title), slug: String(p.slug ?? ""), type: p.type as ProductType, propertyType: String(p.property_type ?? ""), destinationId: String(p.destination_id ?? ""), newCity: "",
@@ -153,15 +159,15 @@ export function OfferForm({ user, offerId, onClose }: Props) {
         destinationId = created.data.id;
       }
 
-      // 2. Provider (the property / business behind the offer)
-      const providerName = form.providerName.trim() || form.title.trim();
-      const providerPayload = { trade_name: providerName, legal_name: providerName, email: form.providerEmail.trim() || user.email || "", phone: textOrNull(form.providerPhone) };
-      let providerId = ids.providerId;
-      if (providerId) {
-        const updated = await supabase.from("providers").update(providerPayload).eq("id", providerId);
-        if (updated.error) throw updated.error;
-      } else {
-        const created = await supabase.from("providers").insert({ ...providerPayload, owner_id: user.id, country_code: "BO", status: "approved" }).select("id").single();
+      // 2. Partner (the property / business behind the offer). Existing partners are edited in admin → Socios.
+      let providerId = partnerChoice === "new" ? null : partnerChoice;
+      if (!providerId) {
+        const providerName = form.providerName.trim() || form.title.trim();
+        const created = await supabase.from("providers").insert({
+          trade_name: providerName, legal_name: providerName, email: form.providerEmail.trim() || user.email || "", phone: textOrNull(form.providerPhone),
+          partner_type: form.type === "accommodation" ? "hotel" : "agency", city: destinations.find((item) => item.id === destinationId)?.name ?? (form.newCity.trim() || null),
+          owner_id: user.id, country_code: "BO", status: "approved"
+        }).select("id").single();
         if (created.error) throw created.error;
         providerId = created.data.id;
       }
@@ -389,12 +395,18 @@ export function OfferForm({ user, offerId, onClose }: Props) {
       </fieldset>
 
       <fieldset>
-        <legend>Proveedor (contacto interno, no se publica)</legend>
-        <div className="admin-form-grid three">
-          <label>Nombre del negocio<input value={form.providerName} onChange={(event) => set("providerName", event.target.value)} placeholder={form.title} /></label>
-          <label>Email<input type="email" value={form.providerEmail} onChange={(event) => set("providerEmail", event.target.value)} /></label>
-          <label>Teléfono / WhatsApp<input value={form.providerPhone} onChange={(event) => set("providerPhone", event.target.value)} /></label>
-        </div>
+        <legend>Socio (empresa o dueño del alojamiento · no se publica)</legend>
+        <label>Socio<select value={partnerChoice} onChange={(event) => setPartnerChoice(event.target.value)}>
+          <option value="new">+ Registrar un socio nuevo</option>
+          {partners.map((partner) => <option key={partner.id} value={partner.id}>{partner.trade_name}{partner.city ? ` · ${partner.city}` : ""}</option>)}
+        </select><small>Sus datos de contacto se editan en la pestaña «Socios».</small></label>
+        {partnerChoice === "new" && (
+          <div className="admin-form-grid three">
+            <label>Nombre del negocio<input value={form.providerName} onChange={(event) => set("providerName", event.target.value)} placeholder={form.title} /></label>
+            <label>Email<input type="email" value={form.providerEmail} onChange={(event) => set("providerEmail", event.target.value)} /></label>
+            <label>Teléfono / WhatsApp<input value={form.providerPhone} onChange={(event) => set("providerPhone", event.target.value)} /></label>
+          </div>
+        )}
       </fieldset>
 
       <fieldset>
