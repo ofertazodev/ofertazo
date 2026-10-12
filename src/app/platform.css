@@ -649,7 +649,6 @@ button.admin-metric { text-align:left; cursor:pointer; }
 .scarcity-badge.urgent, .scarcity-badge.flash { background:var(--brand-gradient); color:#fff; box-shadow:0 6px 16px rgba(255,74,11,.28); }
 .scarcity-badge.urgent::before { animation-duration:1.2s; }
 .scarcity-badge.urgent .scarcity-llama svg { animation-duration:.32s; }
-.scarcity-badge.urgent span:last-child { animation:scarcity-nudge 2.4s ease-in-out infinite; }
 @keyframes scarcity-trot { 0%,100% { transform:translateY(1px) rotate(-6deg); } 50% { transform:translateY(-2px) rotate(6deg); } }
 @keyframes scarcity-pulse { 0% { box-shadow:0 0 0 0 rgba(255,74,11,.45); } 70%,100% { box-shadow:0 0 0 10px rgba(255,74,11,0); } }
 @keyframes scarcity-nudge { 0%,82%,100% { transform:translateX(0); } 86% { transform:translateX(-2px); } 90% { transform:translateX(2px); } 94% { transform:translateX(-1px); } }
@@ -657,5 +656,20 @@ button.admin-metric { text-align:left; cursor:pointer; }
 .offer-row-body .scarcity-badge { margin:auto 0 0; }
 .price-card .scarcity-badge { margin:4px 0 10px; }
 @media (prefers-reduced-motion:reduce) {
-  .scarcity-badge::before, .scarcity-llama svg, .scarcity-badge span:last-child { animation:none; }
+  .scarcity-badge::before, .scarcity-llama svg { animation:none; }
+}
+
+/* scarcity badge alternates "Último cupo" <-> "¡Reserva ya!" and works as the booking button */
+.scarcity-badge { cursor:pointer; text-decoration:none; transition:transform .15s; }
+.scarcity-badge:hover { transform:translateY(-1px) scale(1.03); }
+.scarcity-badge:focus-visible { outline:3px solid rgba(33,63,59,.5); outline-offset:2px; }
+.scarcity-text { display:grid; justify-items:center; overflow:hidden; }
+#reservar { scroll-margin-top:100px; }
+.scarcity-line { grid-area:1 / 1; white-space:nowrap; animation:scarcity-swap 5s ease-in-out infinite; }
+.scarcity-line.cta { animation-delay:-2.5s; }
+.scarcity-badge.urgent .scarcity-text { animation:scarcity-nudge 2.4s ease-in-out infinite; }
+@keyframes scarcity-swap { 0% { opacity:0; transform:translateY(80%); } 6%, 44% { opacity:1; transform:none; } 50%, 100% { opacity:0; transform:translateY(-80%); } }
+@media (prefers-reduced-motion:reduce) {
+  .scarcity-line, .scarcity-text { animation:none !important; }
+  .scarcity-line.cta { display:none; }
 }

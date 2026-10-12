@@ -44,6 +44,7 @@ export const es = {
     remainingOne: "Queda 1 cupo",
     remainingHurry: "¡Solo quedan {n} cupos!",
     lastSpot: "¡Último cupo!",
+    bookNowShort: "¡Reserva ya!",
     endsIn: "Termina en",
     startsOn: "Disponible desde el {date}",
     ended: "Esta oferta terminó",

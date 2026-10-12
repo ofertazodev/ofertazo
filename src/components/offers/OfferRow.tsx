@@ -46,7 +46,7 @@ export function OfferRow({ listing, locale, dict, listName }: Props) {
               {extraAmenities > 0 && <li>+{extraAmenities}</li>}
             </ul>
           )}
-          <StateNote listing={listing} locale={locale} dict={dict} />
+          <StateNote listing={listing} locale={locale} dict={dict} insideLink />
           {hasCountdown(listing) && state === "active" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} compact />}
         </div>
         <div className="offer-row-price">

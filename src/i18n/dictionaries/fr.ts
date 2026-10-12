@@ -44,6 +44,7 @@ export const fr: Dictionary = {
     remainingOne: "Plus qu'une place",
     remainingHurry: "Plus que {n} places !",
     lastSpot: "Dernière place !",
+    bookNowShort: "Réservez vite !",
     endsIn: "Se termine dans",
     startsOn: "Disponible à partir du {date}",
     ended: "Cette offre est terminée",

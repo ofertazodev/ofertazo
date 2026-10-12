@@ -41,7 +41,7 @@ export function OfferCard({ listing, locale, dict, listName }: Props) {
           <h3>{listing.title}</h3>
           {listing.verified && <p className="verified-line"><BadgeCheck size={15} /> {dict.common.verified}</p>}
           <p className="offer-includes">{[listing.durationLabel, ...listing.includes].filter(Boolean).join(" · ")}</p>
-          <StateNote listing={listing} locale={locale} dict={dict} />
+          <StateNote listing={listing} locale={locale} dict={dict} insideLink />
           <div className="offer-bottom">
             <div>
               <span className="old-price">{fmt(dict.common.before, { amount: formatMoney(listing.original, locale) })}</span>
@@ -56,12 +56,12 @@ export function OfferCard({ listing, locale, dict, listName }: Props) {
   );
 }
 
-export function StateNote({ listing, locale, dict }: { listing: Listing; locale: Locale; dict: Dictionary }) {
+export function StateNote({ listing, locale, dict, insideLink = false }: { listing: Listing; locale: Locale; dict: Dictionary; insideLink?: boolean }) {
   const state = listingState(listing);
   if (state === "sold_out") return <p className="state-note danger">{dict.common.soldOut}</p>;
   if (state === "ended") return <p className="state-note danger">{dict.common.ended}</p>;
   if (state === "upcoming" && listing.startsAt) return <p className="state-note">{fmt(dict.common.startsOn, { date: formatDate(listing.startsAt, locale) })}</p>;
-  if (listing.remainingUnits !== null && listing.remainingUnits <= LOW_STOCK) return <ScarcityBadge remaining={listing.remainingUnits} common={dict.common} flash={listing.kind === "flash"} />;
+  if (listing.remainingUnits !== null && listing.remainingUnits <= LOW_STOCK) return <ScarcityBadge remaining={listing.remainingUnits} common={dict.common} flash={listing.kind === "flash"} bookingHref={`${href(locale, `/ofertas/${listing.slug}`)}#reservar`} insideLink={insideLink} />;
   if (listing.endsAt && !hasCountdown(listing)) return <p className="state-note">{fmt(dict.common.validUntil, { date: formatDate(listing.endsAt, locale) })}</p>;
   return null;
 }
