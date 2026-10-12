@@ -42,6 +42,8 @@ export const en: Dictionary = {
     soldOut: "Sold out",
     remaining: "{n} spots left",
     remainingOne: "1 spot left",
+    remainingHurry: "Only {n} spots left!",
+    lastSpot: "Last spot left!",
     endsIn: "Ends in",
     startsOn: "Available from {date}",
     ended: "This deal has ended",

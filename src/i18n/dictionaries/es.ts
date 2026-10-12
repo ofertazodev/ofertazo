@@ -42,6 +42,8 @@ export const es = {
     soldOut: "Agotado",
     remaining: "Quedan {n} cupos",
     remainingOne: "Queda 1 cupo",
+    remainingHurry: "¡Solo quedan {n} cupos!",
+    lastSpot: "¡Último cupo!",
     endsIn: "Termina en",
     startsOn: "Disponible desde el {date}",
     ended: "Esta oferta terminó",

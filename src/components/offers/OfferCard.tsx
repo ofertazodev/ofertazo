@@ -5,12 +5,13 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
-import { fmt, href, plural } from "@/i18n/format";
+import { fmt, href } from "@/i18n/format";
 import { track } from "@/lib/analytics";
 import { formatDate } from "@/lib/dates";
 import { hasCountdown, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
 import { discountPercent, formatMoney, savings } from "@/lib/money";
 import { Countdown } from "./Countdown";
+import { LOW_STOCK, ScarcityBadge } from "./ScarcityBadge";
 
 type Props = { listing: Listing; locale: Locale; dict: Dictionary; listName: string };
 
@@ -60,7 +61,7 @@ export function StateNote({ listing, locale, dict }: { listing: Listing; locale:
   if (state === "sold_out") return <p className="state-note danger">{dict.common.soldOut}</p>;
   if (state === "ended") return <p className="state-note danger">{dict.common.ended}</p>;
   if (state === "upcoming" && listing.startsAt) return <p className="state-note">{fmt(dict.common.startsOn, { date: formatDate(listing.startsAt, locale) })}</p>;
-  if (listing.remainingUnits !== null && listing.remainingUnits <= 5) return <p className="state-note warm">{plural(listing.remainingUnits, dict.common.remainingOne, dict.common.remaining)}</p>;
+  if (listing.remainingUnits !== null && listing.remainingUnits <= LOW_STOCK) return <ScarcityBadge remaining={listing.remainingUnits} common={dict.common} flash={listing.kind === "flash"} />;
   if (listing.endsAt && !hasCountdown(listing)) return <p className="state-note">{fmt(dict.common.validUntil, { date: formatDate(listing.endsAt, locale) })}</p>;
   return null;
 }
