@@ -462,6 +462,15 @@ export const fr: Dictionary = {
     switchToSignup: "Créer un nouveau compte",
     switchToLogin: "J'ai déjà un compte",
     confirmEmail: "Consultez votre boîte mail pour confirmer votre compte, puis connectez-vous.",
+    forgot: "Mot de passe oublié ?",
+    forgotNeedEmail: "Saisissez votre e-mail et appuyez à nouveau sur « Mot de passe oublié ? ».",
+    forgotSent: "Si cet e-mail a un compte, nous vous avons envoyé un lien pour créer un nouveau mot de passe.",
+    newPasswordTitle: "Créez un nouveau mot de passe.",
+    newPasswordText: "Choisissez un mot de passe d'au moins 8 caractères. Vous pourrez ensuite vous connecter avec votre e-mail et ce mot de passe.",
+    newPassword: "Nouveau mot de passe",
+    savePassword: "Enregistrer le mot de passe",
+    passwordSaved: "C'est fait, votre mot de passe est enregistré. Vous pouvez maintenant vous connecter avec votre e-mail.",
+    resetInvalid: "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau depuis « Mot de passe oublié ? ».",
     notConfigured: "L'authentification n'est pas configurée dans cet environnement."
   },
   notFound: {

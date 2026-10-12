@@ -462,6 +462,15 @@ export const es = {
     switchToSignup: "Crear una cuenta nueva",
     switchToLogin: "Ya tengo una cuenta",
     confirmEmail: "Revisa tu correo para confirmar la cuenta y luego inicia sesión.",
+    forgot: "¿Olvidaste tu contraseña?",
+    forgotNeedEmail: "Escribe tu email y vuelve a pulsar «¿Olvidaste tu contraseña?».",
+    forgotSent: "Si ese email tiene cuenta, te enviamos un enlace para crear una contraseña nueva.",
+    newPasswordTitle: "Crea una contraseña nueva.",
+    newPasswordText: "Elige una contraseña de al menos 8 caracteres. Después podrás entrar con tu email y esta contraseña.",
+    newPassword: "Contraseña nueva",
+    savePassword: "Guardar contraseña",
+    passwordSaved: "Listo, tu contraseña quedó guardada. Ya puedes entrar con tu email.",
+    resetInvalid: "Este enlace ya no es válido o venció. Pide uno nuevo desde «¿Olvidaste tu contraseña?».",
     notConfigured: "La autenticación no está configurada en este entorno."
   },
   notFound: {

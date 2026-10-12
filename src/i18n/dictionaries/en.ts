@@ -462,6 +462,15 @@ export const en: Dictionary = {
     switchToSignup: "Create a new account",
     switchToLogin: "I already have an account",
     confirmEmail: "Check your inbox to confirm your account, then log in.",
+    forgot: "Forgot your password?",
+    forgotNeedEmail: "Type your email and press “Forgot your password?” again.",
+    forgotSent: "If that email has an account, we sent you a link to create a new password.",
+    newPasswordTitle: "Create a new password.",
+    newPasswordText: "Choose a password with at least 8 characters. You can then sign in with your email and this password.",
+    newPassword: "New password",
+    savePassword: "Save password",
+    passwordSaved: "Done, your password is saved. You can now sign in with your email.",
+    resetInvalid: "This link is no longer valid or has expired. Request a new one from “Forgot your password?”.",
     notConfigured: "Authentication isn't configured in this environment."
   },
   notFound: {

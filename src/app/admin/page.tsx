@@ -28,6 +28,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState<Tab>("overview");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (!supabase) { setMessage("Supabase no está configurado en este entorno."); setLoading(false); return; }
@@ -51,7 +52,20 @@ export default function AdminPage() {
     if (!supabase) return;
     const form = new FormData(event.currentTarget);
     const { error } = await supabase.auth.signInWithPassword({ email: String(form.get("email")), password: String(form.get("password")) });
+    if (error) setMessage(error.message === "Invalid login credentials" ? "Email o contraseña incorrectos. Si entras con Google, usa el botón de Google." : error.message);
+  }
+
+  async function signInWithGoogle() {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/admin` } });
     if (error) setMessage(error.message);
+  }
+
+  async function sendReset() {
+    if (!supabase) return;
+    if (!email.trim()) { setMessage("Escribe tu email y vuelve a pulsar «¿Olvidaste tu contraseña?»."); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/es/cuenta/contrasena` });
+    setMessage(error ? error.message : "Si ese email tiene cuenta, te enviamos un enlace para crear una contraseña nueva.");
   }
 
   async function signOut() {
@@ -67,10 +81,13 @@ export default function AdminPage() {
         <ShieldAlert size={38} />
         <p className="modal-kicker">PANEL ADMINISTRATIVO</p>
         <h1>Inicia sesión para continuar.</h1>
-        <label>Email<input name="email" type="email" required autoComplete="email" /></label>
+        <button type="button" className="google-button" onClick={() => void signInWithGoogle()}><span className="google-mark">G</span> Continuar con Google</button>
+        <div className="auth-divider"><span>o usa tu email</span></div>
+        <label>Email<input name="email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
         <label>Contraseña<input name="password" type="password" required autoComplete="current-password" /></label>
         {message && <p className="form-message">{message}</p>}
         <button className="dark-button">Entrar</button>
+        <button type="button" className="modal-secondary" onClick={() => void sendReset()}>¿Olvidaste tu contraseña?</button>
         <Link className="text-link" href="/">Volver al sitio</Link>
       </form>
     </main>

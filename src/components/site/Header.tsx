@@ -92,11 +92,22 @@ function AuthModal({ auth, onClose }: { auth: Dictionary["auth"]; onClose: () =>
     const email = String(form.get("email") ?? "");
     const password = String(form.get("password") ?? "");
     setBusy(true);
-    const result = mode === "signup" ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password });
+    const result = mode === "signup"
+      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.href } })
+      : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (result.error) { setMessage(result.error.message); return; }
     if (mode === "signup" && !result.data.session) { setMessage(auth.confirmEmail); return; }
     onClose();
+  }
+
+  async function forgot(form: HTMLFormElement | null) {
+    if (!supabase) { setMessage(auth.notConfigured); return; }
+    const email = String(new FormData(form ?? undefined).get("email") ?? "").trim();
+    if (!email) { setMessage(auth.forgotNeedEmail); return; }
+    const locale = window.location.pathname.split("/")[1] || "es";
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/${locale}/cuenta/contrasena` });
+    setMessage(error ? error.message : auth.forgotSent);
   }
 
   async function google() {
@@ -117,6 +128,7 @@ function AuthModal({ auth, onClose }: { auth: Dictionary["auth"]; onClose: () =>
         <label>{auth.password}<input name="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required placeholder={auth.passwordPlaceholder} /></label>
         {message && <p className="form-message">{message}</p>}
         <button className="dark-button form-button" disabled={busy}>{mode === "signup" ? auth.signup : auth.login} <ArrowRight size={17} /></button>
+        {mode === "login" && <button type="button" className="modal-secondary" onClick={(event) => void forgot(event.currentTarget.form)}>{auth.forgot}</button>}
       </form>
       <button className="modal-secondary" onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setMessage(""); }}>{mode === "signup" ? auth.switchToLogin : auth.switchToSignup}</button>
     </Modal>
