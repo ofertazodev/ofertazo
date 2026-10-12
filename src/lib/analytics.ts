@@ -30,6 +30,52 @@ export function track(event: AnalyticsEvent, params: EventParams = {}) {
   } catch {
     // Analytics must never break the page.
   }
+  sendFirstParty(event, params);
+}
+
+// --- First-party anonymous statistics (admin → Estadísticas) ---
+// Sent to /api/track without cookies or identifiers; works whether or not the visitor accepts cookies.
+
+const INTERNAL_KEY = "tripya_internal";
+
+/** Admins browsing the site are not counted (set when the admin panel opens). */
+export function markInternalVisitor() {
+  try { window.localStorage.setItem(INTERNAL_KEY, "1"); } catch { /* best effort */ }
+}
+
+function isInternalVisitor() {
+  try { return window.localStorage.getItem(INTERNAL_KEY) === "1"; } catch { return false; }
+}
+
+export function trackPageView() {
+  sendFirstParty("page_view", {});
+}
+
+function sendFirstParty(event: AnalyticsEvent | "page_view", params: EventParams) {
+  try {
+    if (isInternalVisitor()) return;
+    const attribution = getAttribution();
+    const pick = (value: unknown) => (typeof value === "string" || typeof value === "number" ? String(value) : undefined);
+    const payload = JSON.stringify({
+      event,
+      path: window.location.pathname,
+      locale: window.location.pathname.split("/")[1],
+      offer: pick(params.item_id ?? params.offer),
+      destination: event === "view_destination" ? pick(params.destination) : undefined,
+      placement: pick(params.placement ?? params.item_list_name),
+      search: pick(params.search_term),
+      utm_source: attribution.utm_source,
+      utm_campaign: attribution.utm_campaign,
+      utm_content: attribution.utm_content,
+      referrer: attribution.referrer
+    });
+    const blob = new Blob([payload], { type: "application/json" });
+    if (!navigator.sendBeacon?.("/api/track", blob)) {
+      void fetch("/api/track", { method: "POST", body: payload, headers: { "Content-Type": "application/json" }, keepalive: true });
+    }
+  } catch {
+    // Statistics must never break the page.
+  }
 }
 
 // --- First-touch attribution (which TikTok / Instagram link brought the visitor) ---

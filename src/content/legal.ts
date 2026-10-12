@@ -97,6 +97,7 @@ export const legalDocs: Record<string, LegalDoc> = {
         "Datos que nos das: nombre, email, teléfono/WhatsApp, fechas de viaje, número de personas y comentarios.",
         "Datos de proveedores: datos del alojamiento, contacto y fotos enviadas en el formulario «Publica tu alojamiento».",
         "Datos de navegación: si aceptas las cookies de analítica, datos anónimos sobre las páginas visitadas y el origen de la visita (por ejemplo, un enlace de TikTok o Instagram).",
+        "Estadísticas propias anónimas: contamos visitas y clics (página, oferta, origen de la visita, tipo de dispositivo y país) sin usar cookies y sin guardar tu dirección IP. Usamos un código temporal que cambia cada día y no permite identificarte ni seguirte entre días.",
         "No recogemos ni almacenamos datos de tarjetas bancarias."
       ] },
       { heading: "3. Para qué los usamos", paragraphs: [

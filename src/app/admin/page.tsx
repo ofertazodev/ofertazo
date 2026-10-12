@@ -2,20 +2,23 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, LogOut, MapPin, Package, ShieldAlert } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, LineChart, LogOut, MapPin, Package, ShieldAlert } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 import { BookingsPanel } from "@/components/admin/BookingsPanel";
 import { DestinationsPanel } from "@/components/admin/DestinationsPanel";
 import { OffersPanel } from "@/components/admin/OffersPanel";
 import { OverviewPanel } from "@/components/admin/OverviewPanel";
+import { StatsPanel } from "@/components/admin/StatsPanel";
+import { markInternalVisitor } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase-browser";
 import { LlamaLoader, TripyaLogo } from "@/components/site/TripyaLogo";
 
-type Tab = "overview" | "bookings" | "offers" | "destinations" | "applications";
+type Tab = "overview" | "stats" | "bookings" | "offers" | "destinations" | "applications";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "overview", label: "Resumen", icon: BarChart3 },
+  { id: "stats", label: "Estadísticas", icon: LineChart },
   { id: "bookings", label: "Reservas", icon: CalendarCheck },
   { id: "offers", label: "Ofertas", icon: Package },
   { id: "destinations", label: "Destinos", icon: MapPin },
@@ -39,6 +42,8 @@ export default function AdminPage() {
       const { data, error } = await client.from("user_roles").select("role").eq("user_id", nextUser.id);
       const hasAccess = !error && Boolean(data?.some(({ role }) => ["admin", "superadmin", "finance_admin"].includes(role)));
       setAllowed(hasAccess);
+      // Admins browsing the public site should not inflate the statistics.
+      if (hasAccess) markInternalVisitor();
       setMessage(hasAccess ? "" : "Tu cuenta todavía no tiene un rol administrativo.");
       setLoading(false);
     }
@@ -120,6 +125,7 @@ export default function AdminPage() {
           {tabs.map(({ id, label, icon: Icon }) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}><Icon size={16} /> {label}</button>)}
         </div>
         {tab === "overview" && <OverviewPanel onNavigate={setTab} />}
+        {tab === "stats" && <StatsPanel />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "offers" && <OffersPanel user={user} />}
         {tab === "destinations" && <DestinationsPanel />}

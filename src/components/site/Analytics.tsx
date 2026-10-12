@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import { href } from "@/i18n/format";
-import { CONSENT_EVENT, captureAttribution, readConsent, saveConsent, type Consent } from "@/lib/analytics";
+import { CONSENT_EVENT, captureAttribution, readConsent, saveConsent, trackPageView, type Consent } from "@/lib/analytics";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -21,6 +22,10 @@ export function Analytics({ locale, cookies, policyLabel }: { locale: Locale; co
     window.addEventListener(CONSENT_EVENT, onChange);
     return () => window.removeEventListener(CONSENT_EVENT, onChange);
   }, []);
+
+  // Anonymous page view for the admin statistics; runs after captureAttribution so the source is known.
+  const pathname = usePathname();
+  useEffect(() => { trackPageView(); }, [pathname]);
 
   return (
     <>

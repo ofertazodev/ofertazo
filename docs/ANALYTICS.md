@@ -1,6 +1,8 @@
 # Analítica y enlaces de campaña
 
-## Dos fuentes de datos
+## Tres fuentes de datos
+
+0. **Estadísticas propias (panel admin → Estadísticas)**: todas las visitas, sin depender de las cookies. Ver «Estadísticas propias» más abajo.
 
 1. **Google Analytics 4**: visitas, origen, páginas, botones. Se activa con `NEXT_PUBLIC_GA_ID` y solo carga si el visitante acepta las cookies.
 2. **Base de datos (panel admin → Resumen)**: reservas reales con su origen. Cada reserva guarda los parámetros UTM del enlace por el que llegó la persona (`bookings.attribution`). Esto no depende de las cookies.
@@ -39,3 +41,12 @@ Se guarda el último enlace de campaña por el que llegó la persona (30 días).
 ## SEO
 
 Cada página de oferta tiene título, descripción e imagen para las vistas previas en WhatsApp, Facebook e Instagram, además de datos estructurados (`schema.org/Product`) y versiones por idioma (`hreflang`). Las páginas de reserva y las legales no se indexan.
+
+
+## Estadísticas propias (admin → Estadísticas)
+
+- Cada llamada a `track()` (`src/lib/analytics.ts`) y cada cambio de página envían un evento a `POST /api/track`, además de a GA4.
+- `/api/track` descarta bots, calcula el origen (TikTok, Instagram…, a partir de `utm_source` o del referrer), el dispositivo y el país (`x-vercel-ip-country`), y llama a `track_event()`.
+- `track_event()` guarda el evento en `analytics_events`. **No se guardan IPs ni cookies**: la IP y el navegador solo se usan para un hash con una sal aleatoria diaria (`analytics_salts`) que se borra a las 48 h. Una persona cuenta una vez por día y no se puede seguir entre días.
+- Solo los administradores pueden leer los datos, mediante `analytics_summary(p_days)`.
+- Las visitas de los administradores no se cuentan: al abrir `/admin` se marca el navegador (`localStorage.tripya_internal`).
