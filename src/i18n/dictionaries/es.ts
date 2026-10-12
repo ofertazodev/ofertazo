@@ -93,7 +93,6 @@ export const es = {
     bbq: "Parrilla"
   },
   home: {
-    eyebrow: "VIAJES QUE SÍ DAN GANAS",
     title: "Tu próximo gran plan",
     titleEm: "empieza aquí.",
     lead: "Alojamientos y escapadas verificadas en Bolivia, con precios exclusivos que no encuentras en otro lado.",
@@ -130,13 +129,12 @@ export const es = {
       { title: "Envía tu solicitud", text: "Fechas, personas y tus datos. Te damos un número de reserva." },
       { title: "Confirmamos contigo", text: "Verificamos disponibilidad con el alojamiento y te escribimos." }
     ],
-    trustEyebrow: "VIAJA CON CONFIANZA",
     trustTitle: "Todo claro antes",
     trustTitleEm: "de hacer las maletas.",
     trustPoints: [
-      { title: "Alojamientos verificados", text: "Comprobamos identidad, ubicación, fotos y condiciones." },
-      { title: "Precios honestos", text: "Ves el precio habitual, el precio Tripya y cuánto ahorras." },
-      { title: "Personas reales", text: "Te atendemos por WhatsApp antes, durante y después de tu viaje." }
+      { title: "Alojamientos y servicios verificados", text: "Comprobamos la identidad, la ubicación, las condiciones y la calidad del servicio de cada uno de nuestros socios." },
+      { title: "Viajes accesibles", text: "Encontramos las mejores tarifas y precios exclusivos para que viajar no te cueste un ojo de la cara." },
+      { title: "Equipo disponible 24/7", text: "¡Nuestro equipo está a tu servicio para resolver tus dudas en cualquier momento!" }
     ],
     trustLink: "Qué significa «verificado»",
     providerEyebrow: "¿TIENES UN ALOJAMIENTO?",
@@ -409,7 +407,6 @@ export const es = {
     faqTitle: "Preguntas frecuentes",
     faq: [
       { q: "¿Cuándo pago?", a: "Después de que confirmemos la disponibilidad con el alojamiento. Te enviamos las instrucciones con tu número de reserva." },
-      { q: "¿Guardan los datos de mi tarjeta?", a: "No. Tripya nunca almacena datos de tarjetas ni te los pedirá por WhatsApp o email." },
       { q: "¿Puedo cancelar?", a: "Depende de la política de cada oferta, que siempre ves antes de reservar." },
       { q: "¿Los alojamientos son reales?", a: "Sí. Cada alojamiento con el sello «Verificado por Tripya» fue revisado por nuestro equipo." }
     ]

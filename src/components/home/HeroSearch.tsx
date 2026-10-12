@@ -100,7 +100,6 @@ export function HeroSearch({ locale, dict }: { locale: Locale; dict: Dictionary 
       <section className="shell hub-banner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         <div className="hub-banner-image" style={{ backgroundImage: `linear-gradient(90deg,rgba(23,35,43,.78) 0%,rgba(23,35,43,.35) 55%,rgba(23,35,43,.05) 100%),url('${slide.image}')` }} />
         <div className="hub-banner-copy">
-          <p className="eyebrow">{home.eyebrow}</p>
           <h2>{home.title} <em>{home.titleEm}</em></h2>
           <p>{home.lead}</p>
         </div>

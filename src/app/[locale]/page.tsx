@@ -93,7 +93,6 @@ export default async function HomePage({ params, searchParams }: Props) {
       <section className="trust-section" id="confianza">
         <div className="shell trust-inner">
           <div>
-            <p className="eyebrow warm">{t.trustEyebrow}</p>
             <h2>{t.trustTitle}<br /><em>{t.trustTitleEm}</em></h2>
             <Link className="text-link" href={href(locale, "/verificacion")}>{t.trustLink} <ArrowRight size={16} /></Link>
           </div>

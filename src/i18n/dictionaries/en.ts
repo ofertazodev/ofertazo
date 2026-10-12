@@ -93,7 +93,6 @@ export const en: Dictionary = {
     bbq: "BBQ"
   },
   home: {
-    eyebrow: "TRIPS WORTH TAKING",
     title: "Your next great plan",
     titleEm: "starts here.",
     lead: "Verified stays and getaways in Bolivia, with exclusive prices you won't find anywhere else.",
@@ -130,13 +129,12 @@ export const en: Dictionary = {
       { title: "Send your request", text: "Dates, guests and your details. You get a booking number." },
       { title: "We confirm with you", text: "We check availability with the property and get back to you." }
     ],
-    trustEyebrow: "TRAVEL WITH CONFIDENCE",
     trustTitle: "Everything clear",
     trustTitleEm: "before you pack.",
     trustPoints: [
-      { title: "Verified stays", text: "We check identity, location, photos and conditions." },
-      { title: "Honest prices", text: "You see the regular price, the Tripya price and how much you save." },
-      { title: "Real people", text: "We help you on WhatsApp before, during and after your trip." }
+      { title: "Verified stays and services", text: "We check the identity, location, conditions and service quality of every one of our partners." },
+      { title: "Affordable travel", text: "We find the best rates and exclusive prices so traveling doesn't cost you an arm and a leg." },
+      { title: "Team available 24/7", text: "Our team is here to answer your questions at any time!" }
     ],
     trustLink: "What “verified” means",
     providerEyebrow: "DO YOU OWN A PROPERTY?",
@@ -409,7 +407,6 @@ export const en: Dictionary = {
     faqTitle: "Frequently asked questions",
     faq: [
       { q: "When do I pay?", a: "After we confirm availability with the property. We send you the instructions with your booking number." },
-      { q: "Do you store my card details?", a: "No. Tripya never stores card details and will never ask for them on WhatsApp or by email." },
       { q: "Can I cancel?", a: "It depends on each deal's policy, which you always see before booking." },
       { q: "Are the properties real?", a: "Yes. Every property with the “Verified by Tripya” badge was checked by our team." }
     ]

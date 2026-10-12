@@ -93,7 +93,6 @@ export const fr: Dictionary = {
     bbq: "Barbecue"
   },
   home: {
-    eyebrow: "DES VOYAGES QUI DONNENT ENVIE",
     title: "Votre prochaine grande aventure",
     titleEm: "commence ici.",
     lead: "Des hébergements et escapades vérifiés en Bolivie, à des prix exclusifs introuvables ailleurs.",
@@ -130,13 +129,12 @@ export const fr: Dictionary = {
       { title: "Envoyez votre demande", text: "Dates, personnes et vos coordonnées. Vous recevez un numéro de réservation." },
       { title: "Nous confirmons avec vous", text: "Nous vérifions la disponibilité auprès de l'hébergement et vous écrivons." }
     ],
-    trustEyebrow: "VOYAGEZ EN CONFIANCE",
     trustTitle: "Tout est clair",
     trustTitleEm: "avant de faire vos valises.",
     trustPoints: [
-      { title: "Hébergements vérifiés", text: "Nous vérifions l'identité, l'emplacement, les photos et les conditions." },
-      { title: "Prix honnêtes", text: "Vous voyez le prix habituel, le prix Tripya et votre économie." },
-      { title: "De vraies personnes", text: "Nous vous aidons sur WhatsApp avant, pendant et après votre voyage." }
+      { title: "Hébergements et services vérifiés", text: "Nous vérifions l'identité, l'emplacement, les conditions et la qualité du service de chacun de nos partenaires." },
+      { title: "Des voyages accessibles", text: "Nous trouvons les meilleurs tarifs et des prix exclusifs pour que voyager ne vous coûte pas les yeux de la tête." },
+      { title: "Équipe disponible 24h/24, 7j/7", text: "Notre équipe est à votre service pour répondre à vos questions à tout moment !" }
     ],
     trustLink: "Ce que signifie « vérifié »",
     providerEyebrow: "VOUS AVEZ UN HÉBERGEMENT ?",
@@ -409,7 +407,6 @@ export const fr: Dictionary = {
     faqTitle: "Questions fréquentes",
     faq: [
       { q: "Quand dois-je payer ?", a: "Après confirmation de la disponibilité avec l'hébergement. Nous vous envoyons les instructions avec votre numéro de réservation." },
-      { q: "Conservez-vous mes données bancaires ?", a: "Non. Tripya ne conserve jamais de données de carte et ne vous les demandera jamais par WhatsApp ou e-mail." },
       { q: "Puis-je annuler ?", a: "Cela dépend de la politique de chaque offre, toujours visible avant de réserver." },
       { q: "Les hébergements sont-ils réels ?", a: "Oui. Chaque hébergement portant le badge « Vérifié par Tripya » a été contrôlé par notre équipe." }
     ]
