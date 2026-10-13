@@ -434,6 +434,7 @@ export const en: Dictionary = {
     handoffPhone: "Phone",
     handoffClosing: "Please send me the QR to complete the payment.",
     floating: "Book and pay via WhatsApp",
+    floatingMessage: "Hi Tripya, I'd like to book and pay for a deal via WhatsApp.",
     offerCta: "Pay for this deal on WhatsApp: we send you the QR, you pay from your bank and we confirm your booking.",
     offerButton: "Message us on WhatsApp",
     payButton: "Pay via WhatsApp",

@@ -36,7 +36,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <Header locale={locale} nav={dict.nav} auth={dict.auth} />
         <main>{children}</main>
         <Footer locale={locale} dict={dict} />
-        <WhatsAppButton variant="floating" placement="floating" message={dict.whatsapp.generalMessage} label={dict.whatsapp.floating} />
+        <WhatsAppButton variant="floating" placement="floating" message={dict.whatsapp.floatingMessage} label={dict.whatsapp.floating} />
         <Analytics locale={locale} cookies={dict.cookies} policyLabel={dict.legal.cookies} />
       </body>
     </html>

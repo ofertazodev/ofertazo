@@ -434,6 +434,7 @@ export const es = {
     handoffPhone: "Teléfono",
     handoffClosing: "Envíenme el QR para completar el pago.",
     floating: "Reserva y paga por WhatsApp",
+    floatingMessage: "Hola Tripya, quiero reservar y pagar una oferta por WhatsApp.",
     offerCta: "Paga esta oferta por WhatsApp: te enviamos el QR, pagas desde tu banco y confirmamos tu reserva.",
     offerButton: "Escribir por WhatsApp",
     payButton: "Pagar por WhatsApp",
