@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ExternalLink, MessageCircle, RefreshCw } from "lucide-react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { CheckCircle2, ExternalLink, MessageCircle, RefreshCw, X } from "lucide-react";
 import { BOOKING_STATUS_LABELS, BOOKING_STATUSES, BOOKING_TRANSITIONS, type BookingStatus } from "@/lib/booking-status";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { formatMoney, money } from "@/lib/money";
@@ -25,10 +25,20 @@ type BookingRow = {
   locale: string;
   attribution: Record<string, string>;
   admin_notes: string | null;
-  booking_items: { title_snapshot: string; extras: { name: string }[]; product: { slug: string } | null }[];
+  handed_off_at: string | null;
+  payment_method: string | null;
+  payment_reference: string | null;
+  payment_amount_minor: number | null;
+  payment_confirmed_at: string | null;
+  booking_items: { title_snapshot: string; extras: { name: string }[]; product: { slug: string; provider: { trade_name: string; contact_name: string | null; phone: string | null } | null } | null }[];
 };
 
-const SELECT = "id,code,status,created_at,contact_name,contact_email,contact_phone,check_in,check_out,guests,total_minor,currency_code,notes,locale,attribution,admin_notes,booking_items(title_snapshot,extras,product:products(slug))";
+const PAYMENT_METHODS = { qr: "QR", transfer: "Transferencia", cash: "Efectivo", card: "Tarjeta", other: "Otro" } as const;
+/** Bookings the sales team still has to collect: new requests and those waiting for the QR payment. */
+const OPEN_STATUSES: BookingStatus[] = ["pending", "awaiting_payment"];
+const waLink = (phone: string) => `https://wa.me/${phone.replace(/\D/g, "")}`;
+
+const SELECT = "id,code,status,created_at,contact_name,contact_email,contact_phone,check_in,check_out,guests,total_minor,currency_code,notes,locale,attribution,admin_notes,handed_off_at,payment_method,payment_reference,payment_amount_minor,payment_confirmed_at,booking_items(title_snapshot,extras,product:products(slug,provider:providers(trade_name,contact_name,phone)))";
 
 function customerWhatsapp(row: BookingRow) {
   const digits = (row.contact_phone ?? "").replace(/\D/g, "");
@@ -39,7 +49,8 @@ function customerWhatsapp(row: BookingRow) {
 
 export function BookingsPanel() {
   const [rows, setRows] = useState<BookingRow[]>([]);
-  const [filter, setFilter] = useState<BookingStatus | "">("pending");
+  const [filter, setFilter] = useState<BookingStatus | "" | "open">("open");
+  const [paying, setPaying] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -48,7 +59,8 @@ export function BookingsPanel() {
     if (!supabase) return;
     setLoading(true);
     let query = supabase.from("bookings").select(SELECT).order("created_at", { ascending: false }).limit(200);
-    if (filter) query = query.eq("status", filter);
+    if (filter === "open") query = query.in("status", OPEN_STATUSES);
+    else if (filter) query = query.eq("status", filter);
     const { data, error } = await query;
     setLoading(false);
     if (error) { setMessage(error.message); return; }
@@ -65,22 +77,42 @@ export function BookingsPanel() {
     void load();
   }
 
+  async function confirmPayment(event: FormEvent<HTMLFormElement>, row: BookingRow) {
+    event.preventDefault();
+    if (!supabase) return;
+    const form = new FormData(event.currentTarget);
+    const amount = Number(String(form.get("amount") ?? "").replace(",", "."));
+    if (!Number.isFinite(amount) || amount < 0) { setMessage("Escribe el monto recibido en bolivianos (ej. 450 o 450.50)."); return; }
+    const { error } = await supabase.rpc("confirm_booking_payment", {
+      p_booking_id: row.id,
+      p_amount_minor: Math.round(amount * 100),
+      p_reference: String(form.get("reference") ?? ""),
+      p_method: String(form.get("method") ?? "qr")
+    });
+    if (error) { setMessage(error.message.includes("invalid_status_transition") ? "Esta reserva ya no está pendiente de pago." : error.message); return; }
+    setPaying(null);
+    setMessage(`Pago de la reserva ${row.code} confirmado.`);
+    void load();
+  }
+
   return (
     <section>
       <div className="admin-toolbar">
         <h1>Reservas</h1>
-        <select value={filter} onChange={(event) => setFilter(event.target.value as BookingStatus | "")}>
+        <select value={filter} onChange={(event) => setFilter(event.target.value as BookingStatus | "" | "open")}>
+          <option value="open">Por cobrar (nuevas + esperando pago)</option>
           <option value="">Todos los estados</option>
           {BOOKING_STATUSES.map((status) => <option key={status} value={status}>{BOOKING_STATUS_LABELS[status]}</option>)}
         </select>
         <button className="admin-action-link" onClick={() => void load()}><RefreshCw size={15} /> Actualizar</button>
       </div>
-      <p className="muted">Flujo del piloto: <b>Solicitud recibida</b> → confirmas disponibilidad con el alojamiento → <b>Esperando pago</b> (envías instrucciones) → <b>Pagada</b> → <b>Confirmada</b> → <b>Completada</b>.</p>
+      <p className="muted">Flujo del piloto: el cliente envía la reserva y llega al WhatsApp del agente con todos los datos → <b>Esperando pago</b> (el agente confirma disponibilidad con el socio y envía su QR) → <b>Confirmar pago</b> cuando llegue el dinero → <b>Pagada</b> → <b>Confirmada</b> → <b>Completada</b>.</p>
       {message && <p className="admin-notice">{message}</p>}
       {loading ? <LlamaLoader size="sm" label="Cargando..." /> : rows.length === 0 ? <p className="admin-empty">No hay reservas con este estado.</p> : (
         <div className="admin-table">
           {rows.map((row) => {
             const item = row.booking_items[0];
+            const partner = item?.product?.provider ?? null;
             const wa = customerWhatsapp(row);
             const open = openId === row.id;
             return (
@@ -97,6 +129,9 @@ export function BookingsPanel() {
                   <div className="admin-row-body">
                     <dl className="review-list">
                       <dt>Recibida</dt><dd>{formatDateTime(row.created_at, "es")}</dd>
+                      <dt>Socio / alojamiento</dt><dd>{partner ? <>{partner.trade_name}{partner.contact_name ? ` · ${partner.contact_name}` : ""}{partner.phone ? <> · <a href={waLink(partner.phone)} target="_blank" rel="noreferrer">{partner.phone}</a></> : null}</> : "—"}</dd>
+                      <dt>Enviado a WhatsApp</dt><dd>{row.handed_off_at ? formatDateTime(row.handed_off_at, "es") : "No (cerró antes de la redirección)"}</dd>
+                      {row.payment_confirmed_at && <><dt>Pago</dt><dd><b>{formatMoney(money(row.payment_amount_minor ?? 0, row.currency_code), "es")}</b> · {PAYMENT_METHODS[(row.payment_method ?? "other") as keyof typeof PAYMENT_METHODS] ?? row.payment_method}{row.payment_reference ? ` · Ref. ${row.payment_reference}` : ""} · {formatDateTime(row.payment_confirmed_at, "es")}</dd></>}
                       <dt>Personas</dt><dd>{row.guests ?? "—"}</dd>
                       <dt>Email</dt><dd><a href={`mailto:${row.contact_email}?subject=${encodeURIComponent(`Tu reserva ${row.code ?? ""}`)}`}>{row.contact_email}</a></dd>
                       <dt>Teléfono</dt><dd>{row.contact_phone ?? "—"}</dd>
@@ -105,6 +140,19 @@ export function BookingsPanel() {
                       <dt>Idioma</dt><dd>{row.locale.toUpperCase()}</dd>
                       <dt>Origen</dt><dd>{Object.entries(row.attribution ?? {}).map(([key, value]) => `${key}: ${value}`).join(" · ") || "directo"}</dd>
                     </dl>
+                    {OPEN_STATUSES.includes(row.status) && (paying === row.id ? (
+                      <form className="payment-form" onSubmit={(event) => void confirmPayment(event, row)}>
+                        <label>Monto recibido (Bs)<input name="amount" inputMode="decimal" required defaultValue={(row.total_minor / 100).toString()} /></label>
+                        <label>Método<select name="method" defaultValue="qr">{Object.entries(PAYMENT_METHODS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+                        <label>N.º de operación / referencia<input name="reference" maxLength={120} placeholder="Opcional" /></label>
+                        <div className="admin-row-buttons">
+                          <button className="dark-button"><CheckCircle2 size={16} /> Confirmar pago</button>
+                          <button type="button" onClick={() => setPaying(null)}><X size={15} /> Cancelar</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button className="dark-button payment-cta" onClick={() => setPaying(row.id)}><CheckCircle2 size={16} /> Confirmar pago</button>
+                    ))}
                     <div className="admin-row-actions">
                       {wa && <a className="admin-action-link" href={wa} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp al cliente</a>}
                       {item?.product && <a className="admin-action-link" href={`/es/ofertas/${item.product.slug}`} target="_blank" rel="noreferrer"><ExternalLink size={15} /> Ver oferta</a>}

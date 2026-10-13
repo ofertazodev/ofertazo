@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Lock, Minus, Plus } from "lucide-react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
@@ -12,6 +11,7 @@ import { addDays, formatDate, nightsBetween, todayInBolivia } from "@/lib/dates"
 import type { Listing } from "@/lib/listing";
 import { addMoney, formatMoney, money, multiplyMoney, type Money } from "@/lib/money";
 import { supabase } from "@/lib/supabase-browser";
+import { WhatsAppHandoff } from "./WhatsAppHandoff";
 
 type Props = {
   listing: Listing;
@@ -27,7 +27,6 @@ export const BOOKING_EMAIL_KEY = (code: string) => `ofz_booking_email_${code}`;
 
 export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Props) {
   const t = dict.booking;
-  const router = useRouter();
   const [step, setStep] = useState(0);
   const [today, setToday] = useState("");
   const [checkIn, setCheckIn] = useState(initial.checkIn);
@@ -41,6 +40,8 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  /** Booking created: show the handoff to the sales agent on WhatsApp. */
+  const [handoffCode, setHandoffCode] = useState<string | null>(null);
 
   useEffect(() => { setToday(todayInBolivia()); }, []);
   useEffect(() => { track("checkout_step", { item_id: listing.slug, step: step + 1 }); }, [step, listing.slug]);
@@ -116,7 +117,7 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
     }
     try { window.sessionStorage.setItem(BOOKING_EMAIL_KEY(data), email.trim().toLowerCase()); } catch { /* the confirmation page asks for the email instead */ }
     track("generate_lead", { item_id: listing.slug, value: Number(estimate.total.amount) / 100, currency: estimate.total.currency, nights, guests });
-    router.push(href(locale, `/reserva/${data}`));
+    setHandoffCode(data);
   }
 
   const summary = (
@@ -137,6 +138,7 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
 
   return (
     <div className="booking-layout">
+      {handoffCode && <WhatsAppHandoff code={handoffCode} email={email.trim().toLowerCase()} locale={locale} dict={dict} />}
       <div className="booking-main">
         <ol className="stepper-bar" aria-label={fmt(t.stepOf, { current: step + 1, total: t.steps.length })}>
           {t.steps.map((label, index) => <li key={label} className={index === step ? "current" : index < step ? "done" : ""}><span>{index < step ? <Check size={13} /> : index + 1}</span>{label}</li>)}

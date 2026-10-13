@@ -3,7 +3,7 @@ export const BOOKING_STATUSES = ["pending", "awaiting_payment", "paid", "confirm
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
 export const BOOKING_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
-  pending: ["awaiting_payment", "confirmed", "cancelled", "expired"],
+  pending: ["awaiting_payment", "paid", "confirmed", "cancelled", "expired"],
   awaiting_payment: ["paid", "confirmed", "cancelled", "expired"],
   paid: ["confirmed", "refunded", "disputed"],
   confirmed: ["completed", "cancelled", "refunded", "disputed"],

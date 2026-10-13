@@ -31,7 +31,7 @@ export function OverviewPanel({ onNavigate }: { onNavigate: (tab: Tab) => void }
       const [offers, bookings, pending, applications, users, recent] = await Promise.all([
         client.from("offers").select("id", { count: "exact", head: true }).eq("is_published", true),
         client.from("bookings").select("id", { count: "exact", head: true }),
-        client.from("bookings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        client.from("bookings").select("id", { count: "exact", head: true }).in("status", ["pending", "awaiting_payment"]),
         client.from("provider_applications").select("id", { count: "exact", head: true }).eq("status", "new"),
         client.from("profiles").select("id", { count: "exact", head: true }),
         client.from("bookings").select("attribution,booking_items(title_snapshot)").order("created_at", { ascending: false }).limit(500)
@@ -45,7 +45,7 @@ export function OverviewPanel({ onNavigate }: { onNavigate: (tab: Tab) => void }
   }, []);
 
   const cards = [
-    { label: "Solicitudes por gestionar", value: metrics.pending, icon: CalendarCheck, tab: "bookings" as Tab, highlight: metrics.pending > 0 },
+    { label: "Reservas por cobrar", value: metrics.pending, icon: CalendarCheck, tab: "bookings" as Tab, highlight: metrics.pending > 0 },
     { label: "Reservas totales", value: metrics.bookings, icon: CalendarCheck, tab: "bookings" as Tab },
     { label: "Ofertas publicadas", value: metrics.offers, icon: Package, tab: "offers" as Tab },
     { label: "Proveedores nuevos", value: metrics.applications, icon: BriefcaseBusiness, tab: "applications" as Tab, highlight: metrics.applications > 0 },
