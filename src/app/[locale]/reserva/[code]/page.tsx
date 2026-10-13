@@ -6,7 +6,7 @@ import { fmt, resolveLocale } from "@/i18n";
 
 type Props = { params: Promise<{ locale: string; code: string }> };
 
-const BOOKING_CODE_PATTERN = /^OFZ-[A-Z0-9]{6}$/;
+const BOOKING_CODE_PATTERN = /^(TYA|OFZ)-[A-Z0-9]{6}$/;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { dict } = await resolveLocale(params);

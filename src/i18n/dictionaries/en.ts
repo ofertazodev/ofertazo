@@ -397,7 +397,7 @@ export const en: Dictionary = {
   help: {
     eyebrow: "HELP",
     title: "Need help with your booking?",
-    lead: "Message us on WhatsApp with your booking number (e.g. OFZ-7K3M2P) and our team will help you.",
+    lead: "Message us on WhatsApp with your booking number (e.g. TYA-7K3M2P) and our team will help you.",
     whatsappCta: "Message us on WhatsApp",
     emailCta: "Send an email",
     topicsTitle: "We can help with",
@@ -420,7 +420,7 @@ export const en: Dictionary = {
     ]
   },
   whatsapp: {
-    handoffIntro: "Hi Tripya, I'd like to confirm my booking and pay by QR.",
+    handoffIntro: "Hi Tripya, I'd like to pay for this booking.",
     handoffCode: "Booking code",
     handoffOffer: "Deal",
     handoffPartner: "Property / company",
@@ -432,12 +432,13 @@ export const en: Dictionary = {
     handoffTotal: "Total",
     handoffName: "Name",
     handoffPhone: "Phone",
-    handoffClosing: "Could you send me the QR to pay, please?",
-    floating: "Questions? Message us",
-    offerCta: "Questions? Message us directly on WhatsApp.",
-    offerButton: "Ask on WhatsApp",
+    handoffClosing: "Please send me the QR to complete the payment.",
+    floating: "Book and pay via WhatsApp",
+    offerCta: "Pay for this deal on WhatsApp: we send you the QR, you pay from your bank and we confirm your booking.",
+    offerButton: "Message us on WhatsApp",
+    payButton: "Pay via WhatsApp",
     generalMessage: "Hi Tripya, I have a question.",
-    offerMessage: "Hi Tripya, I have a question about “{title}”: {url}",
+    offerMessage: "Hi Tripya, I'd like to pay for this deal: “{title}” {url}",
     bookingMessage: "Hi Tripya, I need help with my booking {code}."
   },
   cookies: {

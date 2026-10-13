@@ -38,7 +38,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
         locale={locale}
         dict={dict}
         initial={{ checkIn: isoDate(query.in), checkOut: isoDate(query.out), guests: Number(query.g) || 2 }}
-        whatsappSlot={<><p className="muted">{dict.whatsapp.offerCta}</p><WhatsAppButton placement="booking_flow" message={fmt(dict.whatsapp.offerMessage, { title: listing.title, url: offerUrl })} label={dict.whatsapp.offerButton} offerSlug={slug} /></>}
+        whatsappSlot={<><p className="muted">{dict.whatsapp.offerCta}</p><WhatsAppButton placement="booking_flow" message={fmt(dict.whatsapp.offerMessage, { title: listing.title, url: offerUrl })} label={dict.whatsapp.payButton} offerSlug={slug} /></>}
       />
     </section>
   );

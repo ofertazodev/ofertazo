@@ -44,7 +44,7 @@ export const legalDocs: Record<string, LegalDoc> = {
     updated: "2026-10-05",
     sections: [
       { heading: "1. Solicitud de reserva", paragraphs: [
-        "Al enviar el formulario de reserva realizas una solicitud. Recibes un número de reserva (por ejemplo OFZ-7K3M2P) que identifica tu reserva en todas las comunicaciones.",
+        "Al enviar el formulario de reserva realizas una solicitud. Recibes un número de reserva (por ejemplo TYA-7K3M2P) que identifica tu reserva en todas las comunicaciones.",
         "La solicitud no es una reserva confirmada hasta que Tripya confirme la disponibilidad con el proveedor y se complete el pago según las instrucciones enviadas."
       ] },
       { heading: "2. Precio", paragraphs: [

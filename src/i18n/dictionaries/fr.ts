@@ -397,7 +397,7 @@ export const fr: Dictionary = {
   help: {
     eyebrow: "AIDE",
     title: "Besoin d'aide avec votre réservation ?",
-    lead: "Écrivez-nous sur WhatsApp en indiquant votre numéro de réservation (par exemple OFZ-7K3M2P) et notre équipe vous aidera.",
+    lead: "Écrivez-nous sur WhatsApp en indiquant votre numéro de réservation (par exemple TYA-7K3M2P) et notre équipe vous aidera.",
     whatsappCta: "Écrire sur WhatsApp",
     emailCta: "Envoyer un e-mail",
     topicsTitle: "Nous pouvons vous aider pour",
@@ -420,7 +420,7 @@ export const fr: Dictionary = {
     ]
   },
   whatsapp: {
-    handoffIntro: "Bonjour Tripya, je souhaite confirmer ma réservation et payer par QR.",
+    handoffIntro: "Bonjour Tripya, je souhaite payer cette réservation.",
     handoffCode: "Code de réservation",
     handoffOffer: "Offre",
     handoffPartner: "Hébergement / entreprise",
@@ -432,12 +432,13 @@ export const fr: Dictionary = {
     handoffTotal: "Total",
     handoffName: "Nom",
     handoffPhone: "Téléphone",
-    handoffClosing: "Pouvez-vous m'envoyer le QR pour payer, s'il vous plaît ?",
-    floating: "Des questions ? Écrivez-nous",
-    offerCta: "Des questions ? Écrivez-nous directement sur WhatsApp.",
-    offerButton: "Demander sur WhatsApp",
+    handoffClosing: "Merci de m'envoyer le QR pour finaliser le paiement.",
+    floating: "Réservez et payez par WhatsApp",
+    offerCta: "Payez cette offre par WhatsApp : nous vous envoyons le QR, vous payez depuis votre banque et nous confirmons votre réservation.",
+    offerButton: "Écrire sur WhatsApp",
+    payButton: "Payer par WhatsApp",
     generalMessage: "Bonjour Tripya, j'ai une question.",
-    offerMessage: "Bonjour Tripya, j'ai une question sur « {title} » : {url}",
+    offerMessage: "Bonjour Tripya, je souhaite payer cette offre : « {title} » {url}",
     bookingMessage: "Bonjour Tripya, j'ai besoin d'aide pour ma réservation {code}."
   },
   cookies: {

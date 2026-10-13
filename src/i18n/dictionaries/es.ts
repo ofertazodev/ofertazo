@@ -397,7 +397,7 @@ export const es = {
   help: {
     eyebrow: "AYUDA",
     title: "¿Necesitas ayuda con tu reserva?",
-    lead: "Escríbenos por WhatsApp indicando tu número de reserva (por ejemplo OFZ-7K3M2P) y nuestro equipo te ayudará.",
+    lead: "Escríbenos por WhatsApp indicando tu número de reserva (por ejemplo TYA-7K3M2P) y nuestro equipo te ayudará.",
     whatsappCta: "Escribir por WhatsApp",
     emailCta: "Escribir un email",
     topicsTitle: "Te podemos ayudar con",
@@ -420,7 +420,7 @@ export const es = {
     ]
   },
   whatsapp: {
-    handoffIntro: "Hola Tripya, quiero confirmar mi reserva y pagar con QR.",
+    handoffIntro: "Hola Tripya, quiero realizar el pago de esta reserva.",
     handoffCode: "Código de reserva",
     handoffOffer: "Oferta",
     handoffPartner: "Alojamiento / empresa",
@@ -432,12 +432,13 @@ export const es = {
     handoffTotal: "Total",
     handoffName: "Nombre",
     handoffPhone: "Teléfono",
-    handoffClosing: "¿Me envían el QR para pagar, por favor?",
-    floating: "¿Tienes preguntas? Escríbenos",
-    offerCta: "¿Tienes preguntas? Escríbenos directamente por WhatsApp.",
-    offerButton: "Preguntar por WhatsApp",
+    handoffClosing: "Envíenme el QR para completar el pago.",
+    floating: "Reserva y paga por WhatsApp",
+    offerCta: "Paga esta oferta por WhatsApp: te enviamos el QR, pagas desde tu banco y confirmamos tu reserva.",
+    offerButton: "Escribir por WhatsApp",
+    payButton: "Pagar por WhatsApp",
     generalMessage: "Hola Tripya, tengo una consulta.",
-    offerMessage: "Hola Tripya, tengo una duda sobre «{title}»: {url}",
+    offerMessage: "Hola Tripya, quiero realizar el pago de esta oferta: «{title}» {url}",
     bookingMessage: "Hola Tripya, necesito ayuda con mi reserva {code}."
   },
   cookies: {

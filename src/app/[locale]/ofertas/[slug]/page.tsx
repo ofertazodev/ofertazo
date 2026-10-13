@@ -190,7 +190,7 @@ export default async function OfferPage({ params }: Props) {
             <p className="fine-print">{t.priceNote}</p>
             <div className="price-card-help">
               <p>{dict.whatsapp.offerCta}</p>
-              <WhatsAppButton placement="offer_price_card" message={waMessage} label={dict.whatsapp.offerButton} variant="block" offerSlug={listing.slug} />
+              <WhatsAppButton placement="offer_price_card" message={waMessage} label={dict.whatsapp.payButton} variant="block" offerSlug={listing.slug} />
             </div>
           </aside>
         </div>

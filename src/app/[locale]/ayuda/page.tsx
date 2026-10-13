@@ -29,7 +29,7 @@ export default async function HelpPage({ params }: Props) {
 
       <form className="info-card lookup-inline" id="consultar" action={href(locale, "/reserva")} method="get">
         <h2>{t.lookupTitle}</h2>
-        <label>{dict.confirmation.lookupCode}<input name="code" required placeholder="OFZ-XXXXXX" maxLength={11} autoCapitalize="characters" /></label>
+        <label>{dict.confirmation.lookupCode}<input name="code" required placeholder="TYA-XXXXXX" maxLength={11} autoCapitalize="characters" /></label>
         <button className="dark-button">{dict.confirmation.lookupButton} <ArrowRight size={16} /></button>
       </form>
 
