@@ -5,7 +5,8 @@ import { AMENITIES, PROPERTY_TYPES, type Amenity, type Destination, type Extra, 
 import { money } from "./money";
 import { getServerSupabase } from "./supabase-server";
 
-type Translations = Partial<Record<Locale, Partial<Record<"title" | "description" | "booking_conditions" | "cancellation_policy" | "name", string>>>>;
+type TranslatedFields = Partial<Record<"title" | "description" | "booking_conditions" | "cancellation_policy" | "name" | "duration_label", string>> & { includes?: string[] };
+type Translations = Partial<Record<Locale, TranslatedFields>>;
 
 type OfferRow = {
   id: string;
@@ -80,8 +81,8 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     featured: row.featured,
     title: tr?.title || p.title,
     description: tr?.description || p.description,
-    durationLabel: p.duration_label,
-    includes: p.includes ?? [],
+    durationLabel: tr?.duration_label || p.duration_label,
+    includes: tr?.includes?.length ? tr.includes : p.includes ?? [],
     propertyType: PROPERTY_TYPES.includes(p.property_type as PropertyType) ? (p.property_type as PropertyType) : null,
     pricingUnit: p.pricing_unit,
     capacityMax: p.capacity_max,

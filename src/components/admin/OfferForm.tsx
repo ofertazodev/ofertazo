@@ -64,6 +64,8 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
   const [extras, setExtras] = useState<ExtraDraft[]>([]);
   const [destinations, setDestinations] = useState<DestinationOption[]>([]);
   const [partners, setPartners] = useState<PartnerOption[]>([]);
+  /** Translations as stored (may include fields this form doesn't edit, e.g. includes); merged on save. */
+  const [savedTranslations, setSavedTranslations] = useState<Record<string, Record<string, unknown>>>({});
   /** Selected partner id, or "new" to create one with the quick fields below. */
   const [partnerChoice, setPartnerChoice] = useState<string>(presetProviderId ?? "new");
   const [media, setMedia] = useState<Media[]>([]);
@@ -97,6 +99,7 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
       };
       const p = offer.product;
       const tr = (p.translations ?? {}) as Record<string, { title?: string; description?: string }>;
+      setSavedTranslations((p.translations ?? {}) as Record<string, Record<string, unknown>>);
       if (p.provider?.id) setPartnerChoice(p.provider.id);
       setIds({ productId: p.id, providerId: p.provider?.id ?? null, verifiedAt: (p.verified_at as string | null) ?? null, wasSample: Boolean(p.is_sample) });
       setForm({
@@ -178,11 +181,13 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
         const taken = await supabase.from("products").select("id").eq("slug", slug).maybeSingle();
         if (taken.data) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
       }
-      const translations = Object.fromEntries(
-        [["en", form.enTitle, form.enDescription], ["fr", form.frTitle, form.frDescription]]
-          .filter(([, title, description]) => title.trim() || description.trim())
-          .map(([locale, title, description]) => [locale, { ...(title.trim() ? { title: title.trim() } : {}), ...(description.trim() ? { description: description.trim() } : {}) }])
-      );
+      const translations: Record<string, Record<string, unknown>> = { ...savedTranslations };
+      for (const [locale, title, description] of [["en", form.enTitle, form.enDescription], ["fr", form.frTitle, form.frDescription]] as const) {
+        const merged: Record<string, unknown> = { ...(savedTranslations[locale] ?? {}) };
+        if (title.trim()) merged.title = title.trim(); else delete merged.title;
+        if (description.trim()) merged.description = description.trim(); else delete merged.description;
+        if (Object.keys(merged).length) translations[locale] = merged; else delete translations[locale];
+      }
       const productPayload = {
         provider_id: providerId,
         destination_id: destinationId,

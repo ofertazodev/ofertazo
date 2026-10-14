@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-export function Modal({ title, onClose, children, className = "" }: { title: string; onClose: () => void; children: React.ReactNode; className?: string }) {
+export function Modal({ title, onClose, children, className = "", closeLabel = "Cerrar" }: { title: string; onClose: () => void; children: React.ReactNode; className?: string; closeLabel?: string }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function Modal({ title, onClose, children, className = "" }: { title: str
   return createPortal(
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className={`modal-card ${className}`} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}>
-        <button className="modal-close" aria-label="Cerrar" onClick={onClose}><X size={19} /></button>
+        <button className="modal-close" aria-label={closeLabel} onClick={onClose}><X size={19} /></button>
         {children}
       </section>
     </div>,

@@ -19,6 +19,7 @@ export const es = {
     language: "Idioma"
   },
   common: {
+    copy: "Copiar",
     sample: "EJEMPLO",
     from: "Desde",
     perNight: "/ noche",
@@ -130,7 +131,7 @@ export const es = {
     howSteps: [
       { title: "Elige tu oferta", text: "Mira fotos, servicios, condiciones y el precio exclusivo." },
       { title: "Envía tu solicitud", text: "Fechas, personas y tus datos. Te damos un número de reserva." },
-      { title: "Confirmamos contigo", text: "Verificamos disponibilidad con el alojamiento y te escribimos." }
+      { title: "Paga por WhatsApp", text: "Nuestro agente confirma la disponibilidad y te envía el QR para pagar desde tu banco." }
     ],
     trustTitle: "Todo claro antes",
     trustTitleEm: "de hacer las maletas.",
@@ -151,7 +152,7 @@ export const es = {
     offersTitle: "Todas las ofertas",
     offersLead: "Alojamientos, escapadas y experiencias con precio exclusivo.",
     accommodationsTitle: "Alojamientos",
-    accommodationsLead: "Hoteles, hoteles boutique, resorts, lodges, villas, departamentos y casas vacacionales.",
+    accommodationsLead: "Hoteles, departamentos, casas, hostales, ecolodges, cabañas, hoteles boutique y glamping.",
     search: "Buscar",
     searchPlaceholder: "Nombre o ciudad",
     destination: "Destino",
@@ -251,7 +252,7 @@ export const es = {
     notes: "Comentarios (opcional)",
     notesPlaceholder: "Hora de llegada, ocasión especial, preguntas...",
     paymentTitle: "Pago",
-    paymentText: "Todavía no te cobramos nada. Primero confirmamos la disponibilidad con el alojamiento y después te enviamos las instrucciones de pago.",
+    paymentText: "Todavía no te cobramos nada. Al enviar tu reserva te llevamos a WhatsApp con nuestro agente de ventas: confirma la disponibilidad y te envía el QR para pagar desde tu banco.",
     paymentSafe: "Nunca te pediremos los datos de tu tarjeta por WhatsApp ni por email.",
     summary: "Resumen",
     base: "Precio Tripya",
@@ -293,8 +294,8 @@ export const es = {
     codeHint: "Guárdalo: lo necesitas para cualquier consulta.",
     nextTitle: "¿Qué pasa ahora?",
     nextSteps: [
-      "Confirmamos la disponibilidad con el alojamiento.",
-      "Te escribimos por WhatsApp o email con las instrucciones de pago.",
+      "Te llevamos a WhatsApp con nuestro agente de ventas y los datos de tu reserva.",
+      "El agente confirma la disponibilidad con el alojamiento y te envía el QR de pago.",
       "Cuando recibamos el pago, tu reserva queda confirmada."
     ],
     status: "Estado",
@@ -410,11 +411,11 @@ export const es = {
       "Problema con el pago",
       "Dudas antes o durante tu estadía"
     ],
-    hours: "Respondemos todos los días de 8:00 a 21:00 (hora de Bolivia).",
+    hours: "Nuestro equipo te atiende por WhatsApp las 24 horas, todos los días.",
     lookupTitle: "Consulta el estado de tu reserva",
     faqTitle: "Preguntas frecuentes",
     faq: [
-      { q: "¿Cuándo pago?", a: "Después de que confirmemos la disponibilidad con el alojamiento. Te enviamos las instrucciones con tu número de reserva." },
+      { q: "¿Cuándo pago?", a: "Al enviar tu reserva te llevamos a WhatsApp con nuestro agente de ventas. Confirma la disponibilidad con el alojamiento y te envía el QR para pagar desde tu banco." },
       { q: "¿Puedo cancelar?", a: "Depende de la política de cada oferta, que siempre ves antes de reservar." },
       { q: "¿Los alojamientos son reales?", a: "Sí. Cada alojamiento con el sello «Verificado por Tripya» fue revisado por nuestro equipo." }
     ]
@@ -468,6 +469,7 @@ export const es = {
     updated: "Última actualización: {date}"
   },
   auth: {
+    close: "Cerrar",
     kicker: "TU CUENTA TRIPYA",
     loginTitle: "Bienvenido de vuelta.",
     signupTitle: "Crea tu cuenta.",

@@ -84,7 +84,7 @@ export function BookingStatus({ code, locale, dict, whatsappSlot }: Props) {
       <div className="code-box">
         <span>{t.codeLabel}</span>
         <strong>{booking.code}</strong>
-        <button onClick={copyCode} aria-label="Copy"><Copy size={16} /> {copied ? "✓" : ""}</button>
+        <button onClick={copyCode} aria-label={dict.common.copy}><Copy size={16} /> {copied ? "✓" : ""}</button>
         <small>{t.codeHint}</small>
       </div>
       <dl className="review-list">

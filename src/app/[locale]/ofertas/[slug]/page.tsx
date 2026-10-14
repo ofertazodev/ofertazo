@@ -110,7 +110,7 @@ export default async function OfferPage({ params }: Props) {
           {listing.untranslated && <p className="translation-note">{dict.common.translationPending}</p>}
         </header>
 
-        <Gallery images={listing.images} title={listing.title} showAllLabel={fmt(t.showAllPhotos, { n: listing.images.length })} />
+        <Gallery images={listing.images} title={listing.title} showAllLabel={fmt(t.showAllPhotos, { n: listing.images.length })} labels={{ previous: dict.home.slidePrev, next: dict.home.slideNext, close: dict.common.close }} />
 
         <div className="offer-layout">
           <div className="offer-body">

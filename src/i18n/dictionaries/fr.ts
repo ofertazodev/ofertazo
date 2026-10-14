@@ -19,6 +19,7 @@ export const fr: Dictionary = {
     language: "Langue"
   },
   common: {
+    copy: "Copier",
     sample: "EXEMPLE",
     from: "À partir de",
     perNight: "/ nuit",
@@ -130,7 +131,7 @@ export const fr: Dictionary = {
     howSteps: [
       { title: "Choisissez votre offre", text: "Photos, services, conditions et prix exclusif." },
       { title: "Envoyez votre demande", text: "Dates, personnes et vos coordonnées. Vous recevez un numéro de réservation." },
-      { title: "Nous confirmons avec vous", text: "Nous vérifions la disponibilité auprès de l'hébergement et vous écrivons." }
+      { title: "Payez par WhatsApp", text: "Notre agent confirme la disponibilité et vous envoie le QR pour payer depuis votre banque." }
     ],
     trustTitle: "Tout est clair",
     trustTitleEm: "avant de faire vos valises.",
@@ -151,7 +152,7 @@ export const fr: Dictionary = {
     offersTitle: "Toutes les offres",
     offersLead: "Hébergements, escapades et expériences à prix exclusif.",
     accommodationsTitle: "Hébergements",
-    accommodationsLead: "Hôtels, hôtels boutique, resorts, lodges, villas, appartements et maisons de vacances.",
+    accommodationsLead: "Hôtels, appartements, maisons, auberges, écolodges, cabanes, hôtels boutique et glamping.",
     search: "Rechercher",
     searchPlaceholder: "Nom ou ville",
     destination: "Destination",
@@ -227,7 +228,7 @@ export const fr: Dictionary = {
     priceNote: "Prix final calculé lors de la réservation. Aucun frais caché.",
     sampleNote: "Ceci est une offre d'exemple pour montrer le fonctionnement de Tripya. Elle n'est pas encore réservable : de vraies offres comme celle-ci arrivent bientôt.",
     notBookable: "Cette offre ne peut pas être réservée pour le moment.",
-    shareTitle: "Regardez cette offre"
+    shareTitle: "Découvrez cette offre sur Tripya"
   },
   booking: {
     title: "Réservez votre offre",
@@ -251,7 +252,7 @@ export const fr: Dictionary = {
     notes: "Commentaires (facultatif)",
     notesPlaceholder: "Heure d'arrivée, occasion spéciale, questions...",
     paymentTitle: "Paiement",
-    paymentText: "Nous ne vous débitons rien pour l'instant. Nous confirmons d'abord la disponibilité avec l'hébergement, puis nous vous envoyons les instructions de paiement.",
+    paymentText: "Nous ne vous débitons rien pour l'instant. À l'envoi de votre réservation, nous vous emmenons sur WhatsApp avec notre agent commercial, qui confirme la disponibilité et vous envoie le QR pour payer depuis votre banque.",
     paymentSafe: "Nous ne vous demanderons jamais vos données bancaires par WhatsApp ou par e-mail.",
     summary: "Récapitulatif",
     base: "Prix Tripya",
@@ -293,8 +294,8 @@ export const fr: Dictionary = {
     codeHint: "Gardez-le : vous en aurez besoin pour toute question.",
     nextTitle: "Et maintenant ?",
     nextSteps: [
-      "Nous confirmons la disponibilité avec l'hébergement.",
-      "Nous vous écrivons sur WhatsApp ou par e-mail avec les instructions de paiement.",
+      "Nous vous emmenons sur WhatsApp avec notre agent commercial et les détails de votre réservation.",
+      "L'agent confirme la disponibilité avec l'hébergement et vous envoie le QR de paiement.",
       "Dès réception du paiement, votre réservation est confirmée."
     ],
     status: "Statut",
@@ -410,11 +411,11 @@ export const fr: Dictionary = {
       "Un problème de paiement",
       "Des questions avant ou pendant votre séjour"
     ],
-    hours: "Nous répondons tous les jours de 8 h à 21 h (heure de Bolivie).",
+    hours: "Notre équipe vous répond sur WhatsApp 24h/24, tous les jours.",
     lookupTitle: "Consultez l'état de votre réservation",
     faqTitle: "Questions fréquentes",
     faq: [
-      { q: "Quand dois-je payer ?", a: "Après confirmation de la disponibilité avec l'hébergement. Nous vous envoyons les instructions avec votre numéro de réservation." },
+      { q: "Quand dois-je payer ?", a: "À l'envoi de votre réservation, nous vous emmenons sur WhatsApp avec notre agent commercial. Il confirme la disponibilité avec l'hébergement et vous envoie le QR pour payer depuis votre banque." },
       { q: "Puis-je annuler ?", a: "Cela dépend de la politique de chaque offre, toujours visible avant de réserver." },
       { q: "Les hébergements sont-ils réels ?", a: "Oui. Chaque hébergement portant le badge « Vérifié par Tripya » a été contrôlé par notre équipe." }
     ]
@@ -468,6 +469,7 @@ export const fr: Dictionary = {
     updated: "Dernière mise à jour : {date}"
   },
   auth: {
+    close: "Fermer",
     kicker: "VOTRE COMPTE TRIPYA",
     loginTitle: "Bon retour parmi nous.",
     signupTitle: "Créez votre compte.",

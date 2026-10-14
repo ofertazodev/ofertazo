@@ -117,7 +117,7 @@ function AuthModal({ auth, onClose }: { auth: Dictionary["auth"]; onClose: () =>
   }
 
   return (
-    <Modal title={mode === "signup" ? auth.signupTitle : auth.loginTitle} onClose={onClose}>
+    <Modal title={mode === "signup" ? auth.signupTitle : auth.loginTitle} onClose={onClose} closeLabel={auth.close}>
       <p className="modal-kicker">{auth.kicker}</p>
       <h2>{mode === "signup" ? auth.signupTitle : auth.loginTitle}</h2>
       <p className="modal-copy">{auth.text}</p>

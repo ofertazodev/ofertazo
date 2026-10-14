@@ -19,6 +19,7 @@ export const en: Dictionary = {
     language: "Language"
   },
   common: {
+    copy: "Copy",
     sample: "SAMPLE",
     from: "From",
     perNight: "/ night",
@@ -119,8 +120,8 @@ export const en: Dictionary = {
     flashTitleEm: "won't wait.",
     flashLead: "Limited-time discounts. When the countdown ends, the regular price is back.",
     offersEyebrow: "TEAM PICKS",
-    offersTitle: "Deals to break",
-    offersTitleEm: "the routine.",
+    offersTitle: "Deals to break out of",
+    offersTitleEm: "your routine.",
     destinationsEyebrow: "DESTINATIONS",
     destinationsTitle: "Start with",
     destinationsTitleEm: "a city.",
@@ -130,7 +131,7 @@ export const en: Dictionary = {
     howSteps: [
       { title: "Pick your deal", text: "See photos, amenities, conditions and the exclusive price." },
       { title: "Send your request", text: "Dates, guests and your details. You get a booking number." },
-      { title: "We confirm with you", text: "We check availability with the property and get back to you." }
+      { title: "Pay on WhatsApp", text: "Our agent confirms availability and sends you the QR to pay from your bank." }
     ],
     trustTitle: "Everything clear",
     trustTitleEm: "before you pack.",
@@ -151,7 +152,7 @@ export const en: Dictionary = {
     offersTitle: "All deals",
     offersLead: "Stays, getaways and experiences at exclusive prices.",
     accommodationsTitle: "Stays",
-    accommodationsLead: "Hotels, boutique hotels, resorts, lodges, villas, apartments and vacation homes.",
+    accommodationsLead: "Hotels, apartments, houses, hostels, ecolodges, cabins, boutique hotels and glamping.",
     search: "Search",
     searchPlaceholder: "Name or city",
     destination: "Destination",
@@ -227,7 +228,7 @@ export const en: Dictionary = {
     priceNote: "Final price calculated when booking. No hidden fees.",
     sampleNote: "This is a sample deal showing how Tripya works. It can't be booked yet: real deals like this one are coming soon.",
     notBookable: "This deal can't be booked right now.",
-    shareTitle: "Check out this deal"
+    shareTitle: "Check out this deal on Tripya"
   },
   booking: {
     title: "Book your deal",
@@ -251,7 +252,7 @@ export const en: Dictionary = {
     notes: "Comments (optional)",
     notesPlaceholder: "Arrival time, special occasion, questions...",
     paymentTitle: "Payment",
-    paymentText: "We won't charge you anything yet. First we confirm availability with the property, then we send you the payment instructions.",
+    paymentText: "We won't charge you anything yet. When you send your booking we take you to WhatsApp with our sales agent, who confirms availability and sends you the QR to pay from your bank.",
     paymentSafe: "We will never ask for your card details on WhatsApp or by email.",
     summary: "Summary",
     base: "Tripya price",
@@ -293,8 +294,8 @@ export const en: Dictionary = {
     codeHint: "Keep it: you'll need it for any question.",
     nextTitle: "What happens next?",
     nextSteps: [
-      "We confirm availability with the property.",
-      "We message you on WhatsApp or email with payment instructions.",
+      "We take you to WhatsApp with our sales agent and your booking details.",
+      "The agent confirms availability with the property and sends you the payment QR.",
       "Once we receive the payment, your booking is confirmed."
     ],
     status: "Status",
@@ -410,11 +411,11 @@ export const en: Dictionary = {
       "A payment problem",
       "Questions before or during your stay"
     ],
-    hours: "We reply every day from 8:00 to 21:00 (Bolivia time).",
+    hours: "Our team answers on WhatsApp 24 hours a day, every day.",
     lookupTitle: "Check your booking status",
     faqTitle: "Frequently asked questions",
     faq: [
-      { q: "When do I pay?", a: "After we confirm availability with the property. We send you the instructions with your booking number." },
+      { q: "When do I pay?", a: "When you send your booking we take you to WhatsApp with our sales agent. They confirm availability with the property and send you the QR to pay from your bank." },
       { q: "Can I cancel?", a: "It depends on each deal's policy, which you always see before booking." },
       { q: "Are the properties real?", a: "Yes. Every property with the “Verified by Tripya” badge was checked by our team." }
     ]
@@ -468,6 +469,7 @@ export const en: Dictionary = {
     updated: "Last updated: {date}"
   },
   auth: {
+    close: "Close",
     kicker: "YOUR TRIPYA ACCOUNT",
     loginTitle: "Welcome back.",
     signupTitle: "Create your account.",
