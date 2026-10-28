@@ -5,3 +5,5 @@ import { LlamaLoader } from "@/components/site/TripyaLogo";
 
 // Leaflet touches `window`, so the map only renders in the browser.
 export const OfferMapLazy = dynamic(() => import("./OfferMap"), { ssr: false, loading: () => <div className="offer-map offer-map-loading"><LlamaLoader size="sm" /></div> });
+
+export const RouteMapLazy = dynamic(() => import("./RouteMap"), { ssr: false, loading: () => <div className="offer-map route-map offer-map-loading"><LlamaLoader size="sm" /></div> });

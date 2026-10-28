@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, Handshake, LineChart, LogOut, MapPin, Package, ShieldAlert } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, Handshake, LineChart, LogOut, MapPin, Package, ShieldAlert, Users } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 import { BookingsPanel } from "@/components/admin/BookingsPanel";
@@ -11,14 +11,16 @@ import { OffersPanel } from "@/components/admin/OffersPanel";
 import { OverviewPanel } from "@/components/admin/OverviewPanel";
 import { PartnersPanel } from "@/components/admin/PartnersPanel";
 import { StatsPanel } from "@/components/admin/StatsPanel";
+import { WaitlistPanel } from "@/components/admin/WaitlistPanel";
 import { markInternalVisitor } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase-browser";
 import { LlamaLoader, TripyaLogo } from "@/components/site/TripyaLogo";
 
-type Tab = "overview" | "stats" | "bookings" | "offers" | "partners" | "destinations" | "applications";
+type Tab = "overview" | "waitlist" | "stats" | "bookings" | "offers" | "partners" | "destinations" | "applications";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "overview", label: "Resumen", icon: BarChart3 },
+  { id: "waitlist", label: "Viajeros", icon: Users },
   { id: "stats", label: "Estadísticas", icon: LineChart },
   { id: "bookings", label: "Reservas", icon: CalendarCheck },
   { id: "offers", label: "Ofertas", icon: Package },
@@ -129,6 +131,7 @@ export default function AdminPage() {
           {tabs.map(({ id, label, icon: Icon }) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}><Icon size={16} /> {label}</button>)}
         </div>
         {tab === "overview" && <OverviewPanel onNavigate={setTab} />}
+        {tab === "waitlist" && <WaitlistPanel />}
         {tab === "stats" && <StatsPanel />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "offers" && <OffersPanel key={presetProvider ?? "list"} user={user} presetProviderId={presetProvider} onPresetUsed={() => setPresetProvider(null)} />}

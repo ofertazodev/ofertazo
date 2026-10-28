@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { Copy, Eye, EyeOff, Link2, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import { localeNames, locales } from "@/i18n/config";
 import { es } from "@/i18n/dictionaries/es";
 import { PROPERTY_TYPES, type PropertyType } from "@/lib/listing";
 import { formatMoney, money } from "@/lib/money";
@@ -87,8 +88,8 @@ export function OffersPanel({ user, presetProviderId = null, onPresetUsed }: { u
   // Only sample offers can be deleted here: real ones may have bookings and are hidden instead.
   async function removeSample(row: OfferRow) {
     if (!supabase || !row.product?.is_sample) return;
-    if (!window.confirm(`¿Eliminar la oferta de ejemplo «${row.product.title}»?`)) return;
-    const { error } = await supabase.from("products").delete().eq("id", row.product.id);
+    if (!window.confirm(`¿Eliminar la oferta de ejemplo «${row.product.title}»? También se borran sus reservas de prueba.`)) return;
+    const { error } = await supabase.rpc("delete_sample_products", { p_ids: [row.product.id] });
     setMessage(error?.message ?? "Oferta de ejemplo eliminada.");
     void load();
   }
@@ -96,8 +97,8 @@ export function OffersPanel({ user, presetProviderId = null, onPresetUsed }: { u
   async function removeAllSamples() {
     if (!supabase) return;
     const ids = rows.filter((row) => row.product?.is_sample).map((row) => row.product!.id);
-    if (!ids.length || !window.confirm(`¿Eliminar las ${ids.length} ofertas de ejemplo? Las ofertas reales no se tocan.`)) return;
-    const { error } = await supabase.from("products").delete().in("id", ids);
+    if (!ids.length || !window.confirm(`¿Eliminar las ${ids.length} ofertas de ejemplo? Se borran también sus reservas de prueba. Las ofertas reales no se tocan.`)) return;
+    const { error } = await supabase.rpc("delete_sample_products", { p_ids: ids });
     setMessage(error?.message ?? "Ofertas de ejemplo eliminadas.");
     void load();
   }
@@ -181,7 +182,7 @@ export function OffersPanel({ user, presetProviderId = null, onPresetUsed }: { u
           <label>Oferta<select value={linkSlug} onChange={(event) => setLinkSlug(event.target.value)}>{rows.filter((row) => row.product).map((row) => <option key={row.id} value={row.product!.slug}>{row.product!.title}</option>)}</select></label>
           <label>Red<select value={linkSource} onChange={(event) => setLinkSource(event.target.value)}>{SOURCES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
           <label>Nombre del video / post<input value={linkContent} onChange={(event) => setLinkContent(event.target.value)} placeholder="ej. video piscina 1" /></label>
-          <label>Idioma<select value={linkLocale} onChange={(event) => setLinkLocale(event.target.value)}><option value="es">Español</option><option value="en">English</option><option value="fr">Français</option></select></label>
+          <label>Idioma<select value={linkLocale} onChange={(event) => setLinkLocale(event.target.value)}>{locales.map((locale) => <option key={locale} value={locale}>{localeNames[locale]}</option>)}</select></label>
         </div>
         {campaignLink && <div className="link-output"><code>{campaignLink}</code><button className="dark-button" onClick={() => void copyLink()}><Copy size={15} /> {copied ? "¡Copiado!" : "Copiar"}</button></div>}
       </section>

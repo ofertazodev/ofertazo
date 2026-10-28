@@ -73,7 +73,7 @@ export default async function DestinationPage({ params }: Props) {
             <p>{t.emptyText}</p>
             <div className="empty-actions">
               <Link className="dark-button" href={href(locale, "/proveedores")}>{dict.nav.publish} <ArrowRight size={16} /></Link>
-              <WhatsAppButton placement="destination_empty" message={dict.whatsapp.generalMessage} label="WhatsApp" />
+              <WhatsAppButton placement="destination_empty" message={dict.whatsapp.generalMessage} label="WhatsApp" redirect={dict.whatsapp.redirect} />
             </div>
           </div>
         )}

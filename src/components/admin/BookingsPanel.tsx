@@ -19,6 +19,9 @@ type BookingRow = {
   check_in: string | null;
   check_out: string | null;
   guests: number | null;
+  adults: number | null;
+  children: number;
+  infants: number;
   total_minor: number;
   currency_code: string;
   notes: string | null;
@@ -30,7 +33,7 @@ type BookingRow = {
   payment_reference: string | null;
   payment_amount_minor: number | null;
   payment_confirmed_at: string | null;
-  booking_items: { title_snapshot: string; extras: { name: string }[]; product: { slug: string; provider: { trade_name: string; contact_name: string | null; phone: string | null } | null } | null }[];
+  booking_items: { title_snapshot: string; extras: { name: string }[]; room_option: { name?: string } | null; product: { slug: string; provider: { trade_name: string; contact_name: string | null; phone: string | null } | null } | null }[];
 };
 
 const PAYMENT_METHODS = { qr: "QR", transfer: "Transferencia", cash: "Efectivo", card: "Tarjeta", other: "Otro" } as const;
@@ -38,12 +41,12 @@ const PAYMENT_METHODS = { qr: "QR", transfer: "Transferencia", cash: "Efectivo",
 const OPEN_STATUSES: BookingStatus[] = ["pending", "awaiting_payment"];
 const waLink = (phone: string) => `https://wa.me/${phone.replace(/\D/g, "")}`;
 
-const SELECT = "id,code,status,created_at,contact_name,contact_email,contact_phone,check_in,check_out,guests,total_minor,currency_code,notes,locale,attribution,admin_notes,handed_off_at,payment_method,payment_reference,payment_amount_minor,payment_confirmed_at,booking_items(title_snapshot,extras,product:products(slug,provider:providers(trade_name,contact_name,phone)))";
+const SELECT = "id,code,status,created_at,contact_name,contact_email,contact_phone,check_in,check_out,guests,adults,children,infants,total_minor,currency_code,notes,locale,attribution,admin_notes,handed_off_at,payment_method,payment_reference,payment_amount_minor,payment_confirmed_at,booking_items(title_snapshot,extras,room_option,product:products(slug,provider:providers(trade_name,contact_name,phone)))";
 
 function customerWhatsapp(row: BookingRow) {
   const digits = (row.contact_phone ?? "").replace(/\D/g, "");
   if (digits.length < 7) return null;
-  const greeting = row.locale === "en" ? "Hi" : row.locale === "fr" ? "Bonjour" : "Hola";
+  const greeting = ({ es: "Hola", fr: "Bonjour", pt: "Olá", de: "Hallo" } as Record<string, string>)[row.locale] ?? "Hi";
   return `https://wa.me/${digits}?text=${encodeURIComponent(`${greeting} ${row.contact_name.split(" ")[0]}, te escribimos de Tripya por tu reserva ${row.code ?? ""}.`)}`;
 }
 
@@ -132,7 +135,8 @@ export function BookingsPanel() {
                       <dt>Socio / alojamiento</dt><dd>{partner ? <>{partner.trade_name}{partner.contact_name ? ` · ${partner.contact_name}` : ""}{partner.phone ? <> · <a href={waLink(partner.phone)} target="_blank" rel="noreferrer">{partner.phone}</a></> : null}</> : "—"}</dd>
                       <dt>Enviado a WhatsApp</dt><dd>{row.handed_off_at ? formatDateTime(row.handed_off_at, "es") : "No (cerró antes de la redirección)"}</dd>
                       {row.payment_confirmed_at && <><dt>Pago</dt><dd><b>{formatMoney(money(row.payment_amount_minor ?? 0, row.currency_code), "es")}</b> · {PAYMENT_METHODS[(row.payment_method ?? "other") as keyof typeof PAYMENT_METHODS] ?? row.payment_method}{row.payment_reference ? ` · Ref. ${row.payment_reference}` : ""} · {formatDateTime(row.payment_confirmed_at, "es")}</dd></>}
-                      <dt>Personas</dt><dd>{row.guests ?? "—"}</dd>
+                      <dt>Personas</dt><dd>{row.adults !== null ? [`${row.adults} adultos`, row.children ? `${row.children} niños` : "", row.infants ? `${row.infants} bebés` : ""].filter(Boolean).join(" · ") : row.guests ?? "—"}</dd>
+                      {item?.room_option?.name && <><dt>Habitación</dt><dd>{item.room_option.name}</dd></>}
                       <dt>Email</dt><dd><a href={`mailto:${row.contact_email}?subject=${encodeURIComponent(`Tu reserva ${row.code ?? ""}`)}`}>{row.contact_email}</a></dd>
                       <dt>Teléfono</dt><dd>{row.contact_phone ?? "—"}</dd>
                       {item?.extras?.length > 0 && <><dt>Extras</dt><dd>{item.extras.map((extra) => extra.name).join(", ")}</dd></>}

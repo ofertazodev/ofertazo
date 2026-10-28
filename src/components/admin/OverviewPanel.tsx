@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BriefcaseBusiness, CalendarCheck, Package, Users } from "lucide-react";
+import { BriefcaseBusiness, CalendarCheck, HeartHandshake, Package, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase-browser";
 
-type Tab = "overview" | "bookings" | "offers" | "applications";
+type Tab = "overview" | "waitlist" | "bookings" | "offers" | "applications";
 type Attribution = { utm_source?: string; utm_campaign?: string; utm_content?: string; referrer?: string };
 
 function hostname(url: string | undefined): string | null {
@@ -19,7 +19,7 @@ function countBy<T>(items: T[], key: (item: T) => string) {
 }
 
 export function OverviewPanel({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const [metrics, setMetrics] = useState({ offers: 0, pending: 0, bookings: 0, applications: 0, users: 0 });
+  const [metrics, setMetrics] = useState({ offers: 0, pending: 0, bookings: 0, applications: 0, users: 0, waitlist: 0 });
   const [sources, setSources] = useState<[string, number][]>([]);
   const [contents, setContents] = useState<[string, number][]>([]);
   const [offersByBookings, setOffersByBookings] = useState<[string, number][]>([]);
@@ -28,15 +28,16 @@ export function OverviewPanel({ onNavigate }: { onNavigate: (tab: Tab) => void }
     if (!supabase) return;
     const client = supabase;
     void (async () => {
-      const [offers, bookings, pending, applications, users, recent] = await Promise.all([
+      const [offers, bookings, pending, applications, users, recent, waitlist] = await Promise.all([
         client.from("offers").select("id", { count: "exact", head: true }).eq("is_published", true),
         client.from("bookings").select("id", { count: "exact", head: true }),
         client.from("bookings").select("id", { count: "exact", head: true }).in("status", ["pending", "awaiting_payment"]),
         client.from("provider_applications").select("id", { count: "exact", head: true }).eq("status", "new"),
         client.from("profiles").select("id", { count: "exact", head: true }),
-        client.from("bookings").select("attribution,booking_items(title_snapshot)").order("created_at", { ascending: false }).limit(500)
+        client.from("bookings").select("attribution,booking_items(title_snapshot)").order("created_at", { ascending: false }).limit(500),
+        client.from("waitlist_signups").select("id", { count: "exact", head: true })
       ]);
-      setMetrics({ offers: offers.count ?? 0, bookings: bookings.count ?? 0, pending: pending.count ?? 0, applications: applications.count ?? 0, users: users.count ?? 0 });
+      setMetrics({ offers: offers.count ?? 0, bookings: bookings.count ?? 0, pending: pending.count ?? 0, applications: applications.count ?? 0, users: users.count ?? 0, waitlist: waitlist.count ?? 0 });
       const rows = (recent.data ?? []) as { attribution: Attribution; booking_items: { title_snapshot: string }[] }[];
       setSources(countBy(rows, (row) => row.attribution?.utm_source ?? hostname(row.attribution?.referrer) ?? "directo"));
       setContents(countBy(rows.filter((row) => row.attribution?.utm_content || row.attribution?.utm_campaign), (row) => [row.attribution.utm_source, row.attribution.utm_campaign, row.attribution.utm_content].filter(Boolean).join(" / ")).slice(0, 10));
@@ -45,6 +46,7 @@ export function OverviewPanel({ onNavigate }: { onNavigate: (tab: Tab) => void }
   }, []);
 
   const cards = [
+    { label: "Viajeros en la lista", value: metrics.waitlist, icon: HeartHandshake, tab: "waitlist" as Tab },
     { label: "Reservas por cobrar", value: metrics.pending, icon: CalendarCheck, tab: "bookings" as Tab, highlight: metrics.pending > 0 },
     { label: "Reservas totales", value: metrics.bookings, icon: CalendarCheck, tab: "bookings" as Tab },
     { label: "Ofertas publicadas", value: metrics.offers, icon: Package, tab: "offers" as Tab },

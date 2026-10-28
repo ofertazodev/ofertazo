@@ -25,7 +25,7 @@ export default async function ProvidersPage({ params }: Props) {
         <h1 className="page-title">{t.title}</h1>
         <p className="section-lead">{t.lead}</p>
         <ul className="check-list">{t.benefits.map((benefit) => <li key={benefit}><Check size={16} /> {benefit}</li>)}</ul>
-        <WhatsAppButton placement="providers" message={dict.whatsapp.generalMessage} label={dict.whatsapp.offerButton} />
+        <WhatsAppButton placement="providers" message={dict.whatsapp.generalMessage} label={dict.whatsapp.offerButton} redirect={dict.whatsapp.redirect} />
       </div>
       <ProviderApplicationForm dict={dict} cities={destinations.map((destination) => destination.name)} />
     </section>

@@ -48,9 +48,8 @@ export function Header({ locale, nav, auth }: Props) {
   }
 
   const links = [
-    { path: "/ofertas", label: nav.offers },
-    { path: "/destinos", label: nav.destinations },
-    { path: "/ofertas?flash=1", label: nav.flash },
+    { path: "/ofertas", label: nav.explore },
+    { path: "#como-funciona", label: nav.howItWorks },
     { path: "/ayuda", label: nav.help }
   ];
 

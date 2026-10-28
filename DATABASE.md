@@ -46,6 +46,17 @@ Las migraciones iniciales ya fueron aplicadas al proyecto remoto mediante `npx s
 - Funciones: `create_booking_request`, `get_booking_by_code`, `offer_remaining_units` y el trigger `enforce_booking_transition`.
 - `provider_applications` y el bucket privado `provider-applications`.
 
+## Lista de viajeros, habitaciones e itinerarios
+
+`supabase/migrations/20261028000100_waitlist_rooms_itineraries.sql`:
+
+- `waitlist_signups` (formulario «Únete a la familia Tripya»): solo se escribe con `join_waitlist()`; solo los admins leen y borran (admin → Viajeros, exportable a CSV).
+- `products`: `restrictions`, `perks` («Lo que negociamos para ti»), `excludes`, nota de TripAdvisor copiada a mano, `location_note`, `nearby_places`, `room_options` e `itinerary` (jsonb).
+- `bookings`: `adults`, `children`, `infants`. `booking_items.room_option` guarda la habitación elegida y su suplemento.
+- `create_booking_request` acepta `p_children`, `p_infants` y `p_room_id` (con valores por defecto, compatibles con el cliente anterior). `booking_whatsapp_handoff` incluye habitación y desglose de personas.
+- Ejemplos: habitaciones y beneficios en el hotel de La Paz y el glamping de Uyuni, y el circuito «Salar de Uyuni 3 días / 2 noches» con itinerario y ruta.
+- Los idiomas nuevos (pt, de, zh, ja, ko) se aceptan en reservas, analítica y solicitudes.
+
 ## Siguiente migración
 
 El ledger de doble entrada, pagos, reembolsos, comisiones, cuentas bancarias y payouts deben añadirse en una migración separada, con pruebas de invariantes financieros antes de activar operaciones reales.

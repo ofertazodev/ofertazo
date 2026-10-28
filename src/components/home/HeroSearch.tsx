@@ -1,113 +1,99 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Search, ShieldCheck, Users } from "lucide-react";
+import { CalendarDays, MapPin, Search, ShieldCheck } from "lucide-react";
 import { BrandIcon, type BrandIconName } from "@/components/site/BrandIcons";
+import { SearchSuggest, type Suggestion } from "@/components/site/SearchSuggest";
+import { matchScore } from "@/lib/fuzzy";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import { href } from "@/i18n/format";
 import { track } from "@/lib/analytics";
 import { todayInBolivia } from "@/lib/dates";
-import type { ProductType } from "@/lib/listing";
 
-const heroSlides = [
-  { place: "Salar de Uyuni", region: "Potosí", image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Reflection_on_the_Salar_de_Uyuni%2C_bolivia.jpg/1280px-Reflection_on_the_Salar_de_Uyuni%2C_bolivia.jpg" },
-  { place: "Lago Titicaca", region: "La Paz", image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Bolivia_-_On_the_shores_of_Lake_Titicaca.jpg/1280px-Bolivia_-_On_the_shores_of_Lake_Titicaca.jpg" },
-  { place: "Parque Madidi", region: "La Paz - Beni", image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Parque_Nacional_Madidi_-_La_Paz_-_Bolivia_10.png/1280px-Parque_Nacional_Madidi_-_La_Paz_-_Bolivia_10.png" },
-  { place: "Torotoro", region: "Potosí", image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Canyon_of_Torotoro.jpg/1280px-Canyon_of_Torotoro.jpg" }
-];
+// Christopher Crouzet, CC BY-SA 4.0, via Wikimedia Commons (credited on the photo).
+const HERO_IMAGE = "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Reflection_on_the_Salar_de_Uyuni%2C_bolivia.jpg/1920px-Reflection_on_the_Salar_de_Uyuni%2C_bolivia.jpg";
 
-/** Search tabs change what "Buscar" looks for; link tabs just navigate. */
-type Category =
-  | { kind: "search"; id: ProductType; label: string; icon: BrandIconName }
-  | { kind: "link"; id: string; label: string; icon: BrandIconName; path: string };
+/** What "Buscar" looks for: everything, only stays (searched on the home page) or tours + getaways. */
+type Tab = "offers" | "accommodation" | "trips";
 
-export function HeroSearch({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export function HeroSearch({ locale, dict, suggestions }: { locale: Locale; dict: Dictionary; suggestions: Suggestion[] }) {
   const home = dict.home;
   const router = useRouter();
-  const [category, setCategory] = useState<ProductType>("accommodation");
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [tab, setTab] = useState<Tab>("accommodation");
   const [destination, setDestination] = useState("");
+  /** Slug of the place picked from the suggestions (cleared when the text changes). */
+  const [place, setPlace] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState("2");
   const [today, setToday] = useState<string>();
 
   useEffect(() => { setToday(todayInBolivia()); }, []);
-  useEffect(() => {
-    if (paused) return;
-    const id = window.setInterval(() => setActive((current) => (current + 1) % heroSlides.length), 5000);
-    return () => window.clearInterval(id);
-  }, [paused]);
 
-  const categories: Category[] = [
-    { kind: "search", id: "accommodation", label: home.tabAccommodations, icon: "bed" },
-    { kind: "search", id: "package", label: home.tabPackages, icon: "backpack" },
-    { kind: "search", id: "tour", label: home.tabTours, icon: "mountain" },
-    { kind: "link", id: "flash", label: dict.nav.flash, icon: "bolt", path: "/ofertas?flash=1" },
-    { kind: "link", id: "all", label: home.tabAll, icon: "tag", path: "/ofertas" },
-    { kind: "link", id: "destinations", label: dict.nav.destinations, icon: "pin", path: "/destinos" }
+  const tabs: { id: Tab; label: string; hint: string; icon: BrandIconName }[] = [
+    { id: "offers", label: home.tabOffers, hint: home.tabOffersHint, icon: "tag" },
+    { id: "accommodation", label: home.tabAccommodations, hint: home.tabAccommodationsHint, icon: "bed" },
+    { id: "trips", label: home.tabTrips, hint: home.tabTripsHint, icon: "mountain" }
   ];
-  const current = categories.find((item) => item.kind === "search" && item.id === category);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const params = new URLSearchParams();
-    if (destination.trim()) params.set("q", destination.trim());
+    // A picked place filters by destination; free text that matches exactly one place (even misspelled) does too.
+    const places = suggestions.filter((item) => item.kind === "place" && matchScore(destination, item.label) !== null);
+    const slug = place || (destination.trim() && places.length === 1 ? places[0].id : "");
+    if (slug) params.set("destino", slug);
+    else if (destination.trim()) params.set("q", destination.trim());
     if (checkIn) params.set("in", checkIn);
     if (checkOut) params.set("out", checkOut);
-    if (guests) params.set("g", guests);
-    track("search", { search_term: destination.trim(), guests: Number(guests) || undefined });
+    track("search", { search_term: destination.trim() });
     // Accommodations are searched on the home page itself; the rest in the full offer list.
-    if (category !== "accommodation") params.set("categoria", category);
+    if (tab === "trips") params.set("categoria", "circuitos");
     const qs = params.toString();
-    router.push(category === "accommodation" ? `${href(locale, "/")}${qs ? `?${qs}` : ""}#alojamientos` : `${href(locale, "/ofertas")}?${qs}`);
+    router.push(tab === "accommodation" ? `${href(locale, "/")}${qs ? `?${qs}` : ""}#alojamientos` : `${href(locale, "/ofertas")}${qs ? `?${qs}` : ""}`);
   }
 
-  const slide = heroSlides[active];
-  const go = (step: number) => setActive((index) => (index + step + heroSlides.length) % heroSlides.length);
-
   return (
-    <>
-      <section className="hub">
-        <div className="shell">
-          <nav className="hub-tabs" aria-label={dict.nav.offers}>
-            {categories.map((item) => {
-              const content = <><span className="hub-tab-icon"><BrandIcon name={item.icon} size={28} /></span><span>{item.label}</span></>;
-              return item.kind === "search"
-                ? <button key={item.id} type="button" className={`hub-tab ${item.id === category ? "active" : ""}`} aria-pressed={item.id === category} onClick={() => setCategory(item.id)}>{content}</button>
-                : <Link key={item.id} className="hub-tab" href={href(locale, item.path)}>{content}</Link>;
-            })}
-          </nav>
+    <section className="hero-salar" style={{ backgroundImage: `linear-gradient(90deg,rgba(33,63,59,.78) 0%,rgba(33,63,59,.45) 45%,rgba(33,63,59,.1) 75%),linear-gradient(180deg,rgba(33,63,59,.35) 0%,rgba(33,63,59,0) 40%,rgba(33,63,59,.4) 100%),url('${HERO_IMAGE}')` }}>
+      <div className="shell hero-salar-inner">
+        <div className="hero-salar-copy">
+          <h1>{home.title} <em>{home.titleEm}</em></h1>
+          <p>{home.lead}</p>
+        </div>
 
-          <h1 className="hub-title">{current?.label}</h1>
+        <div className="search-card">
+          <div className="search-tabs" role="tablist" aria-label={dict.nav.offers}>
+            {tabs.map((item) => (
+              <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={`search-tab ${tab === item.id ? "active" : ""}`} onClick={() => setTab(item.id)}>
+                <span className="search-tab-icon"><BrandIcon name={item.icon} size={24} /></span>
+                <span className="search-tab-text"><strong>{item.label}</strong><small>{item.hint}</small></span>
+              </button>
+            ))}
+          </div>
           <form className="hub-search" onSubmit={submit}>
-            <label className="hub-box hub-destination"><MapPin size={19} /><span>{home.searchDestination}<input value={destination} onChange={(event) => setDestination(event.target.value)} placeholder={home.searchDestinationPlaceholder} /></span></label>
+            <label className="hub-box hub-destination"><MapPin size={19} /><span>{home.searchDestination}<SearchSuggest
+              value={destination}
+              onChange={(text) => { setDestination(text); setPlace(""); }}
+              onPick={(item) => {
+                if (item.kind === "offer") { router.push(href(locale, `/ofertas/${item.id}`)); return; }
+                setDestination(item.label);
+                setPlace(item.id);
+              }}
+              suggestions={suggestions}
+              groupLabels={{ place: dict.nav.destinations, offer: dict.nav.offers }}
+              placeholder={home.searchDestinationPlaceholder}
+            /></span></label>
             <div className="hub-box hub-dates">
               <label><CalendarDays size={19} /><span>{home.searchCheckIn}<input type="date" min={today} value={checkIn} onChange={(event) => setCheckIn(event.target.value)} /></span></label>
               <label><CalendarDays size={19} /><span>{home.searchCheckOut}<input type="date" min={checkIn || today} value={checkOut} onChange={(event) => setCheckOut(event.target.value)} /></span></label>
             </div>
-            <label className="hub-box hub-guests"><Users size={19} /><span>{home.searchGuests}<input type="number" min={1} max={50} value={guests} onChange={(event) => setGuests(event.target.value)} /></span></label>
             <button className="hub-button"><Search size={20} /> {home.searchButton}</button>
           </form>
           <p className="hub-note"><span className="live-dot" /> {home.noteNew} <span className="note-divider" /> <ShieldCheck size={15} /> {home.noteVerified}</p>
         </div>
-      </section>
-
-      <section className="shell hub-banner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-        <div className="hub-banner-image" style={{ backgroundImage: `linear-gradient(90deg,rgba(23,35,43,.78) 0%,rgba(23,35,43,.35) 55%,rgba(23,35,43,.05) 100%),url('${slide.image}')` }} />
-        <div className="hub-banner-copy">
-          <h2>{home.title} <em>{home.titleEm}</em></h2>
-          <p>{home.lead}</p>
-        </div>
-        <span className="hub-banner-place"><MapPin size={14} /> {slide.place}, {slide.region} <small>{home.photoCredit}</small></span>
-        <button className="hub-arrow prev" aria-label={home.slidePrev} onClick={() => go(-1)}><ChevronLeft size={20} /></button>
-        <button className="hub-arrow next" aria-label={home.slideNext} onClick={() => go(1)}><ChevronRight size={20} /></button>
-        <div className="hub-dots">{heroSlides.map((item, index) => <button key={item.place} className={index === active ? "active" : ""} aria-label={item.place} aria-current={index === active} onClick={() => setActive(index)} />)}</div>
-      </section>
-    </>
+      </div>
+      <span className="hero-salar-credit"><MapPin size={13} /> Salar de Uyuni, Potosí <small>{home.photoCredit}</small></span>
+    </section>
   );
 }

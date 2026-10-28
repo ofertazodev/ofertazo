@@ -18,6 +18,9 @@ const MAX_IMAGES = 20;
 type Media = { id: string; storage_path: string; public_url: string | null; sort_order: number };
 type DestinationOption = { id: string; name: string };
 type ExtraDraft = { id: string; name: string; price: string };
+type NearbyDraft = { key: string; name: string; minutes: string; mode: "walk" | "car" };
+type RoomDraft = { id: string; name: string; description: string; imageUrl: string; features: string; beds: string; sizeM2: string; maxGuests: string; supplement: string };
+type DayDraft = { key: string; title: string; description: string; overnight: string; stops: string };
 
 const emptyForm = {
   title: "", slug: "", type: "accommodation" as ProductType, propertyType: "", destinationId: "", newCity: "",
@@ -28,6 +31,8 @@ const emptyForm = {
   bookingConditions: "", cancellationPolicy: "",
   address: "", latitude: "", longitude: "",
   sample: false, verified: false, verificationSummary: "", googleRating: "", googleReviewCount: "", googleMapsUrl: "",
+  tripadvisorRating: "", tripadvisorReviewCount: "", tripadvisorUrl: "",
+  restrictions: "", perks: "", excludes: "", locationNote: "",
   providerName: "", providerEmail: "", providerPhone: "",
   enTitle: "", enDescription: "", frTitle: "", frDescription: ""
 };
@@ -54,6 +59,16 @@ function slugify(text: string) {
 }
 const intOrNull = (value: string) => (value.trim() === "" ? null : Number.parseInt(value, 10));
 const textOrNull = (value: string) => value.trim() || null;
+const lines = (value: string) => value.split("\n").map((line) => line.trim()).filter(Boolean);
+const decimalOrNull = (value: string) => (value.trim() === "" ? null : Number(value.replace(",", ".")));
+
+/** Itinerary stops are typed one per line: "Nombre | latitud | longitud". */
+function parseStops(text: string) {
+  return lines(text).map((line) => {
+    const [name = "", lat = "", lng = ""] = line.split("|").map((part) => part.trim());
+    return { name, lat: Number(lat.replace(",", ".")), lng: Number(lng.replace(",", ".")) };
+  });
+}
 
 type Props = { user: User; offerId: string | null; onClose: (savedMessage?: string) => void; /** New offer for this partner (from admin → Socios). */ presetProviderId?: string | null };
 type PartnerOption = { id: string; trade_name: string; city: string | null };
@@ -62,6 +77,9 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
   const [form, setForm] = useState<FormState>(emptyForm);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [extras, setExtras] = useState<ExtraDraft[]>([]);
+  const [nearby, setNearby] = useState<NearbyDraft[]>([]);
+  const [rooms, setRooms] = useState<RoomDraft[]>([]);
+  const [days, setDays] = useState<DayDraft[]>([]);
   const [destinations, setDestinations] = useState<DestinationOption[]>([]);
   const [partners, setPartners] = useState<PartnerOption[]>([]);
   /** Translations as stored (may include fields this form doesn't edit, e.g. includes); merged on save. */
@@ -112,11 +130,22 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
         bookingConditions: String(p.booking_conditions ?? ""), cancellationPolicy: String(p.cancellation_policy ?? ""),
         address: String(p.address ?? ""), latitude: p.latitude?.toString() ?? "", longitude: p.longitude?.toString() ?? "",
         sample: Boolean(p.is_sample), verified: Boolean(p.verified_at), verificationSummary: String(p.verification_summary ?? ""), googleRating: p.google_rating?.toString() ?? "", googleReviewCount: p.google_review_count?.toString() ?? "", googleMapsUrl: String(p.google_maps_url ?? ""),
+        tripadvisorRating: p.tripadvisor_rating?.toString() ?? "", tripadvisorReviewCount: p.tripadvisor_review_count?.toString() ?? "", tripadvisorUrl: String(p.tripadvisor_url ?? ""),
+        restrictions: ((p.restrictions as string[] | null) ?? []).join("\n"), perks: ((p.perks as string[] | null) ?? []).join("\n"), excludes: ((p.excludes as string[] | null) ?? []).join("\n"), locationNote: String(p.location_note ?? ""),
         providerName: p.provider?.trade_name ?? "", providerEmail: p.provider?.email ?? "", providerPhone: p.provider?.phone ?? "",
         enTitle: tr.en?.title ?? "", enDescription: tr.en?.description ?? "", frTitle: tr.fr?.title ?? "", frDescription: tr.fr?.description ?? ""
       });
       setAmenities(((p.amenities as string[] | null) ?? []).filter((item): item is Amenity => AMENITIES.includes(item as Amenity)));
       setExtras(((p.extras as { id: string; name: string; price_minor: number }[] | null) ?? []).map((extra) => ({ id: extra.id, name: extra.name, price: minorToInput(extra.price_minor) })));
+      // Shapes documented on the products columns (see the 20261028 migration).
+      setNearby(((p.nearby_places as { name: string; minutes: number; mode: string }[] | null) ?? []).map((place, index) => ({ key: `nearby-${index}`, name: place.name, minutes: String(place.minutes), mode: place.mode === "walk" ? "walk" : "car" })));
+      setRooms(((p.room_options as { id: string; name: string; description?: string; image_url?: string; features?: string[]; beds?: string; size_m2?: number; max_guests?: number; supplement_minor?: number }[] | null) ?? []).map((room) => ({
+        id: room.id, name: room.name, description: room.description ?? "", imageUrl: room.image_url ?? "", features: (room.features ?? []).join(", "), beds: room.beds ?? "",
+        sizeM2: room.size_m2?.toString() ?? "", maxGuests: room.max_guests?.toString() ?? "", supplement: minorToInput(room.supplement_minor ?? 0)
+      })));
+      setDays(((p.itinerary as { title: string; description?: string; overnight?: string | null; stops?: { name: string; lat: number; lng: number }[] }[] | null) ?? []).map((day, index) => ({
+        key: `day-${index}`, title: day.title, description: day.description ?? "", overnight: day.overnight ?? "", stops: (day.stops ?? []).map((stop) => `${stop.name} | ${stop.lat} | ${stop.lng}`).join("\n")
+      })));
       setMedia([...(p.product_media ?? [])].sort((a, b) => a.sort_order - b.sort_order));
     })();
   }, [offerId]);
@@ -143,6 +172,10 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
     if (form.type === "accommodation" && (!form.latitude || !form.longitude)) return "Para un alojamiento marca la ubicación en el mapa.";
     if (form.googleRating && (Number(form.googleRating) < 0 || Number(form.googleRating) > 5)) return "La valoración de Google debe estar entre 0 y 5.";
     if (extras.some((extra) => !extra.name.trim() || inputToMinor(extra.price) === null)) return "Revisa los servicios adicionales (nombre y precio).";
+    if (form.tripadvisorRating && !(Number(form.tripadvisorRating.replace(",", ".")) >= 0 && Number(form.tripadvisorRating.replace(",", ".")) <= 5)) return "La nota de TripAdvisor debe estar entre 0 y 5.";
+    if (nearby.some((place) => !place.name.trim() || !/^\d{1,3}$/.test(place.minutes.trim()))) return "Revisa los lugares cercanos (nombre y minutos).";
+    if (rooms.some((room) => !room.name.trim() || inputToMinor(room.supplement || "0") === null)) return "Revisa las habitaciones (nombre y suplemento).";
+    if (days.some((day) => !day.title.trim() || parseStops(day.stops).some((stop) => !stop.name || !Number.isFinite(stop.lat) || !Number.isFinite(stop.lng)))) return "Revisa el itinerario: cada día necesita título y cada parada «Nombre | latitud | longitud».";
     if (media.length + newFiles.length === 0) return "Sube al menos una foto.";
     return null;
   }
@@ -220,6 +253,20 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
         google_rating: form.googleRating ? Number(form.googleRating) : null,
         google_review_count: intOrNull(form.googleReviewCount),
         google_maps_url: textOrNull(form.googleMapsUrl),
+        tripadvisor_rating: decimalOrNull(form.tripadvisorRating),
+        tripadvisor_review_count: intOrNull(form.tripadvisorReviewCount),
+        tripadvisor_url: textOrNull(form.tripadvisorUrl),
+        restrictions: lines(form.restrictions),
+        perks: lines(form.perks),
+        excludes: lines(form.excludes),
+        location_note: textOrNull(form.locationNote),
+        nearby_places: nearby.map((place) => ({ name: place.name.trim(), minutes: Number(place.minutes), mode: place.mode })),
+        room_options: rooms.map((room) => ({
+          id: slugify(room.name) || room.id, name: room.name.trim(), description: room.description.trim(), image_url: textOrNull(room.imageUrl),
+          features: room.features.split(",").map((item) => item.trim()).filter(Boolean), beds: textOrNull(room.beds),
+          size_m2: intOrNull(room.sizeM2), max_guests: intOrNull(room.maxGuests), supplement_minor: inputToMinor(room.supplement || "0")
+        })),
+        itinerary: days.map((day, index) => ({ day: index + 1, title: day.title.trim(), description: day.description.trim(), overnight: textOrNull(day.overnight), stops: parseStops(day.stops) })),
         translations,
         is_published: form.published,
         // Only sent when editing a sample, so saving never depends on the is_sample migration.
@@ -316,6 +363,11 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
           {!form.destinationId && <label>Nueva ciudad<input value={form.newCity} onChange={(event) => set("newCity", event.target.value)} placeholder="Ej. Samaipata" /></label>}
         </div>
         <label>Descripción completa<textarea rows={6} value={form.description} onChange={(event) => set("description", event.target.value)} placeholder="Cómo es el alojamiento, qué lo hace especial, qué se puede hacer cerca..." /></label>
+        <div className="admin-form-grid three">
+          <label>Lo que negociamos para ti (uno por línea)<textarea value={form.perks} onChange={(event) => set("perks", event.target.value)} placeholder={"Bebida de bienvenida\nRegalito Tripya al llegar"} /></label>
+          <label>Restricciones (una por línea)<textarea value={form.restrictions} onChange={(event) => set("restrictions", event.target.value)} placeholder={"Prohibido fumar en la habitación\nNo se admiten mascotas"} /></label>
+          <label>No incluye (uno por línea)<textarea value={form.excludes} onChange={(event) => set("excludes", event.target.value)} placeholder={"Entradas a parques\nPropinas"} /></label>
+        </div>
         <div className="admin-form-grid">
           <label>Resumen corto<input value={form.durationLabel} onChange={(event) => set("durationLabel", event.target.value)} placeholder="Ej. 2 noches + desayuno" /></label>
           <label>Incluye (separado por comas)<input value={form.includes} onChange={(event) => set("includes", event.target.value)} placeholder="Desayuno, visita a bodega, transporte" /></label>
@@ -369,6 +421,59 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
         <button type="button" className="admin-action-link" onClick={() => setExtras([...extras, { id: `extra-${Date.now()}`, name: "", price: "" }])}><Plus size={15} /> Añadir servicio adicional</button>
       </fieldset>
 
+      {form.type === "accommodation" && (
+        <fieldset>
+          <legend>Habitaciones (el cliente elige una al reservar)</legend>
+          <p className="muted">La primera es la tarifa base (suplemento 0). El suplemento se suma {form.pricingUnit === "per_night" ? "por noche" : "una vez por reserva"}.</p>
+          {rooms.map((room, index) => {
+            const update = (patch: Partial<RoomDraft>) => setRooms(rooms.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+            return (
+              <div className="admin-subcard" key={room.id}>
+                <div className="admin-form-grid four">
+                  <label>Nombre<input value={room.name} onChange={(event) => update({ name: event.target.value })} placeholder="Habitación doble superior" /></label>
+                  <label>Suplemento (Bs)<input inputMode="decimal" value={room.supplement} onChange={(event) => update({ supplement: event.target.value })} placeholder="0" /></label>
+                  <label>Camas<input value={room.beds} onChange={(event) => update({ beds: event.target.value })} placeholder="1 cama queen" /></label>
+                  <label>m² / máx. personas<span className="inline-pair"><input type="number" min={1} value={room.sizeM2} onChange={(event) => update({ sizeM2: event.target.value })} placeholder="m²" /><input type="number" min={1} value={room.maxGuests} onChange={(event) => update({ maxGuests: event.target.value })} placeholder="pers." /></span></label>
+                </div>
+                <div className="admin-form-grid">
+                  <label>Lo que tiene (separado por comas)<input value={room.features} onChange={(event) => update({ features: event.target.value })} placeholder="Baño privado, Calefacción, Vista al lago" /></label>
+                  <label>Foto<select value={room.imageUrl} onChange={(event) => update({ imageUrl: event.target.value })}>
+                    <option value="">Sin foto</option>
+                    {room.imageUrl && !media.some((item) => item.public_url === room.imageUrl) && <option value={room.imageUrl}>Foto actual</option>}
+                    {media.map((item, photoIndex) => item.public_url && <option key={item.id} value={item.public_url}>Foto {photoIndex + 1} de la galería</option>)}
+                  </select><small>Sube primero la foto en «Fotos» y guarda; luego elígela aquí.</small></label>
+                </div>
+                <label>Descripción corta<input value={room.description} onChange={(event) => update({ description: event.target.value })} /></label>
+                <button type="button" className="admin-action-link" onClick={() => setRooms(rooms.filter((_, i) => i !== index))}><Trash2 size={15} /> Quitar habitación</button>
+              </div>
+            );
+          })}
+          <button type="button" className="admin-action-link" onClick={() => setRooms([...rooms, { id: `room-${Date.now()}`, name: "", description: "", imageUrl: "", features: "", beds: "", sizeM2: "", maxGuests: "", supplement: rooms.length ? "" : "0" }])}><Plus size={15} /> Añadir habitación</button>
+        </fieldset>
+      )}
+
+      {form.type !== "accommodation" && (
+        <fieldset>
+          <legend>Itinerario día a día (circuitos y escapadas)</legend>
+          <p className="muted">Las paradas se dibujan en el mapa de la ruta, en orden. Copia las coordenadas desde Google Maps (clic derecho en el lugar).</p>
+          {days.map((day, index) => {
+            const update = (patch: Partial<DayDraft>) => setDays(days.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+            return (
+              <div className="admin-subcard" key={day.key}>
+                <div className="admin-form-grid">
+                  <label>Día {index + 1}: título<input value={day.title} onChange={(event) => update({ title: event.target.value })} placeholder="Salar de Uyuni e Isla Incahuasi" /></label>
+                  <label>Noche en (opcional)<input value={day.overnight} onChange={(event) => update({ overnight: event.target.value })} placeholder="Hotel de sal" /></label>
+                </div>
+                <label>Qué se hace<textarea value={day.description} onChange={(event) => update({ description: event.target.value })} /></label>
+                <label>Paradas (una por línea: Nombre | latitud | longitud)<textarea value={day.stops} onChange={(event) => update({ stops: event.target.value })} placeholder={"Cementerio de Trenes | -20.4806 | -66.8361"} /></label>
+                <button type="button" className="admin-action-link" onClick={() => setDays(days.filter((_, i) => i !== index))}><Trash2 size={15} /> Quitar día</button>
+              </div>
+            );
+          })}
+          <button type="button" className="admin-action-link" onClick={() => setDays([...days, { key: `day-${Date.now()}`, title: "", description: "", overnight: "", stops: "" }])}><Plus size={15} /> Añadir día</button>
+        </fieldset>
+      )}
+
       <fieldset>
         <legend>Condiciones</legend>
         <label>Condiciones de reserva<textarea value={form.bookingConditions} onChange={(event) => set("bookingConditions", event.target.value)} placeholder="Documento al check-in, mascotas, niños, horarios..." /></label>
@@ -377,13 +482,26 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
 
       <fieldset>
         <legend>Ubicación</legend>
-        <label>Dirección o referencia<input value={form.address} onChange={(event) => set("address", event.target.value)} /></label>
+        <div className="admin-form-grid">
+          <label>Dirección o referencia<input value={form.address} onChange={(event) => set("address", event.target.value)} /></label>
+          <label>Distancia al centro<input value={form.locationNote} onChange={(event) => set("locationNote", event.target.value)} placeholder="A 15 min a pie del centro" /></label>
+        </div>
         <div className="map-picker-field"><LocationPicker latitude={form.latitude} longitude={form.longitude} onChange={(latitude, longitude) => setForm((current) => ({ ...current, latitude, longitude }))} /></div>
         <div className="admin-form-grid">
           <label>Latitud<input type="number" step="any" value={form.latitude} onChange={(event) => set("latitude", event.target.value)} /></label>
           <label>Longitud<input type="number" step="any" value={form.longitude} onChange={(event) => set("longitude", event.target.value)} /></label>
         </div>
         <div className="map-hint"><MapPin size={17} /> El pin del mapa actualiza estas coordenadas.</div>
+        <p className="field-label">Lugares turísticos cercanos (tiempo aproximado)</p>
+        {nearby.map((place, index) => (
+          <div className="extra-row nearby-row" key={place.key}>
+            <input value={place.name} placeholder="Ej. Plaza 25 de Mayo" onChange={(event) => setNearby(nearby.map((item, i) => (i === index ? { ...item, name: event.target.value } : item)))} />
+            <input value={place.minutes} inputMode="numeric" placeholder="min" onChange={(event) => setNearby(nearby.map((item, i) => (i === index ? { ...item, minutes: event.target.value } : item)))} />
+            <select value={place.mode} onChange={(event) => setNearby(nearby.map((item, i) => (i === index ? { ...item, mode: event.target.value === "walk" ? "walk" : "car" } : item)))}><option value="walk">a pie</option><option value="car">en auto</option></select>
+            <button type="button" aria-label="Quitar" onClick={() => setNearby(nearby.filter((_, i) => i !== index))}><Trash2 size={15} /></button>
+          </div>
+        ))}
+        <button type="button" className="admin-action-link" onClick={() => setNearby([...nearby, { key: `nearby-${Date.now()}`, name: "", minutes: "", mode: "walk" }])}><Plus size={15} /> Añadir lugar cercano</button>
       </fieldset>
 
       <fieldset>
@@ -396,7 +514,12 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
           <label>Nº de opiniones en Google<input type="number" min={0} value={form.googleReviewCount} onChange={(event) => set("googleReviewCount", event.target.value)} /></label>
           <label>Enlace a Google Maps<input type="url" value={form.googleMapsUrl} onChange={(event) => set("googleMapsUrl", event.target.value)} placeholder="https://maps.app.goo.gl/..." /></label>
         </div>
-        <p className="muted">Copia la nota real de la ficha de Google Maps. No inventes valoraciones.</p>
+        <div className="admin-form-grid three">
+          <label>Nota en TripAdvisor (0-5)<input inputMode="decimal" value={form.tripadvisorRating} onChange={(event) => set("tripadvisorRating", event.target.value)} placeholder="4.5" /></label>
+          <label>Nº de comentarios en TripAdvisor<input type="number" min={0} value={form.tripadvisorReviewCount} onChange={(event) => set("tripadvisorReviewCount", event.target.value)} placeholder="800" /></label>
+          <label>Enlace a TripAdvisor<input type="url" value={form.tripadvisorUrl} onChange={(event) => set("tripadvisorUrl", event.target.value)} placeholder="https://www.tripadvisor.com/..." /></label>
+        </div>
+        <p className="muted">Copia la nota real de las fichas de Google Maps y TripAdvisor. No inventes valoraciones.</p>
       </fieldset>
 
       <fieldset>

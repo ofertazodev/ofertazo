@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Lock, Minus, Plus } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, ArrowRight, BedDouble, Check, Lock, Maximize2, Users } from "lucide-react";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import { fmt, href, plural } from "@/i18n/format";
@@ -11,13 +12,14 @@ import { addDays, formatDate, nightsBetween, todayInBolivia } from "@/lib/dates"
 import type { Listing } from "@/lib/listing";
 import { addMoney, formatMoney, money, multiplyMoney, type Money } from "@/lib/money";
 import { supabase } from "@/lib/supabase-browser";
+import { clampGuests, GuestCounter, guestsLabel, type Guests } from "./GuestCounter";
 import { WhatsAppHandoff } from "./WhatsAppHandoff";
 
 type Props = {
   listing: Listing;
   locale: Locale;
   dict: Dictionary;
-  initial: { checkIn: string; checkOut: string; guests: number };
+  initial: { checkIn: string; checkOut: string; guests: Guests };
   whatsappSlot: React.ReactNode;
 };
 
@@ -31,7 +33,9 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
   const [today, setToday] = useState("");
   const [checkIn, setCheckIn] = useState(initial.checkIn);
   const [checkOut, setCheckOut] = useState(initial.checkOut);
-  const [guests, setGuests] = useState(Math.max(1, Math.min(initial.guests || 2, listing.capacityMax ?? 50)));
+  const [guests, setGuests] = useState<Guests>(() => clampGuests(initial.guests, listing.capacityMax));
+  /** Chosen room; the first one is the base rate. */
+  const [roomId, setRoomId] = useState(listing.rooms[0]?.id ?? "");
   const [extraIds, setExtraIds] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -55,13 +59,18 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
     if (value && (fixedNights || !checkOut || checkOut <= value)) setCheckOut(addDays(value, fixedNights ?? listing.minNights));
   }
 
+  const people = guests.adults + guests.children;
+  const room = listing.rooms.find((item) => item.id === roomId) ?? null;
+
+  // Display only: the server recomputes the same total in create_booking_request().
   const estimate = useMemo(() => {
     const base: Money = listing.pricingUnit === "per_night" ? multiplyMoney(listing.promo, Math.max(nights, 0))
-      : listing.pricingUnit === "per_person" ? multiplyMoney(listing.promo, guests)
+      : listing.pricingUnit === "per_person" ? multiplyMoney(listing.promo, people)
       : listing.promo;
+    const roomTotal = room ? multiplyMoney(room.supplement, listing.pricingUnit === "per_night" ? Math.max(nights, 0) : 1) : money(0, listing.promo.currency);
     const extras = listing.extras.filter((extra) => extraIds.includes(extra.id)).reduce((sum, extra) => addMoney(sum, extra.price), money(0, listing.promo.currency));
-    return { base, extras, total: addMoney(base, extras) };
-  }, [extraIds, guests, listing, nights]);
+    return { base, roomTotal, extras, total: addMoney(addMoney(base, roomTotal), extras) };
+  }, [extraIds, people, room, listing, nights]);
 
   function datesError(): ErrorKey | null {
     if (!checkIn || !checkOut || nights <= 0) return "invalid_dates";
@@ -73,7 +82,7 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
 
   function stepError(): ErrorKey | null {
     if (step === 0) return datesError();
-    if (step === 1 && (guests < 1 || (listing.capacityMax !== null && guests > listing.capacityMax))) return "too_many_guests";
+    if (step === 1 && (guests.adults < 1 || (listing.capacityMax !== null && people > listing.capacityMax) || (room?.maxGuests != null && people > room.maxGuests))) return "too_many_guests";
     if (step === 2) {
       if (name.trim().length < 2) return "invalid_name";
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return "invalid_email";
@@ -100,7 +109,10 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
       p_offer_id: listing.offerId,
       p_check_in: checkIn,
       p_check_out: checkOut,
-      p_guests: guests,
+      p_guests: guests.adults,
+      p_children: guests.children,
+      p_infants: guests.infants,
+      p_room_id: room?.id ?? null,
       p_extra_ids: extraIds,
       p_contact_name: name.trim(),
       p_contact_email: email.trim(),
@@ -116,7 +128,7 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
       return;
     }
     try { window.sessionStorage.setItem(BOOKING_EMAIL_KEY(data), email.trim().toLowerCase()); } catch { /* the confirmation page asks for the email instead */ }
-    track("generate_lead", { item_id: listing.slug, value: Number(estimate.total.amount) / 100, currency: estimate.total.currency, nights, guests });
+    track("generate_lead", { item_id: listing.slug, value: Number(estimate.total.amount) / 100, currency: estimate.total.currency, nights, guests: people });
     setHandoffCode(data);
   }
 
@@ -127,8 +139,10 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
       {listing.destination && <p className="muted">{listing.destination.name}</p>}
       <dl>
         {checkIn && checkOut && nights > 0 && <><dt>{t.checkIn} → {t.checkOut}</dt><dd>{formatDate(checkIn, locale, { day: "numeric", month: "short" })} → {formatDate(checkOut, locale, { day: "numeric", month: "short" })} · {plural(nights, dict.common.nightsOne, dict.common.nights)}</dd></>}
-        <dt>{t.guests}</dt><dd>{plural(guests, dict.common.guestsOne, dict.common.guests)}</dd>
+        <dt>{t.guests}</dt><dd>{guestsLabel(guests, t)}</dd>
+        {room && <><dt>{t.room}</dt><dd>{room.name}</dd></>}
         <dt>{t.base}</dt><dd>{formatMoney(estimate.base, locale)}</dd>
+        {estimate.roomTotal.amount > BigInt(0) && <><dt>{t.roomTotal}</dt><dd>{formatMoney(estimate.roomTotal, locale)}</dd></>}
         {estimate.extras.amount > BigInt(0) && <><dt>{t.extrasTotal}</dt><dd>{formatMoney(estimate.extras, locale)}</dd></>}
       </dl>
       <div className="booking-total"><span>{t.total}</span><strong>{formatMoney(estimate.total, locale)}</strong></div>
@@ -163,12 +177,40 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
             <>
               <h2>{t.steps[1]}</h2>
               <p className="field-label">{t.guests}</p>
-              <div className="stepper">
-                <button type="button" aria-label="-" onClick={() => setGuests(Math.max(1, guests - 1))}><Minus size={18} /></button>
-                <strong>{guests}</strong>
-                <button type="button" aria-label="+" onClick={() => setGuests(Math.min(listing.capacityMax ?? 50, guests + 1))}><Plus size={18} /></button>
-              </div>
+              <GuestCounter value={guests} onChange={setGuests} capacity={listing.capacityMax} t={t} />
               {listing.capacityMax !== null && <p className="hint">{fmt(t.capacityHint, { n: listing.capacityMax })}</p>}
+              {(guests.children > 0 || guests.infants > 0) && <p className="hint">{t.guestsNote}</p>}
+              {listing.rooms.length > 0 && (
+                <fieldset className="room-list">
+                  <legend>{t.chooseRoom}</legend>
+                  {listing.rooms.map((option) => {
+                    const tooSmall = option.maxGuests !== null && people > option.maxGuests;
+                    const supplement = option.supplement.amount > BigInt(0) ? fmt(listing.pricingUnit === "per_night" ? t.roomSupplementNight : t.roomSupplement, { amount: formatMoney(option.supplement, locale) }) : t.roomIncluded;
+                    return (
+                      <label key={option.id} className={`room-option ${roomId === option.id ? "active" : ""} ${tooSmall ? "disabled" : ""}`}>
+                        <input type="radio" name="room" value={option.id} checked={roomId === option.id} disabled={tooSmall} onChange={() => setRoomId(option.id)} />
+                        <div className="room-option-head">
+                          <span className="room-radio">{roomId === option.id && <Check size={14} />}</span>
+                          <strong>{option.name}</strong>
+                          <b>{supplement}</b>
+                        </div>
+                        <div className="room-option-body">
+                          {option.imageUrl && <span className="room-photo"><Image src={option.imageUrl} alt={option.name} fill sizes="(max-width: 700px) 100vw, 220px" /></span>}
+                          <div>
+                            <ul className="room-tags">
+                              {option.beds && <li><BedDouble size={14} /> {option.beds}</li>}
+                              {option.sizeM2 !== null && <li><Maximize2 size={14} /> {fmt(t.roomSize, { n: option.sizeM2 })}</li>}
+                              {option.maxGuests !== null && <li><Users size={14} /> {fmt(t.roomUpTo, { n: option.maxGuests })}</li>}
+                            </ul>
+                            {option.description && <p>{option.description}</p>}
+                            {option.features.length > 0 && <ul className="room-features">{option.features.map((feature) => <li key={feature}><Check size={14} /> {feature}</li>)}</ul>}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              )}
               {listing.extras.length > 0 && (
                 <fieldset className="extras-list">
                   <legend>{t.extras}</legend>
@@ -207,7 +249,8 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
               <h2>{t.steps[4]}</h2>
               <dl className="review-list">
                 <dt>{t.checkIn} → {t.checkOut}</dt><dd>{formatDate(checkIn, locale)} → {formatDate(checkOut, locale)} ({plural(nights, dict.common.nightsOne, dict.common.nights)})</dd>
-                <dt>{t.guests}</dt><dd>{guests}</dd>
+                <dt>{t.guests}</dt><dd>{guestsLabel(guests, t)}</dd>
+                {room && <><dt>{t.room}</dt><dd>{room.name}</dd></>}
                 {extraIds.length > 0 && <><dt>{t.extrasTotal}</dt><dd>{listing.extras.filter((extra) => extraIds.includes(extra.id)).map((extra) => extra.name).join(", ")}</dd></>}
                 <dt>{t.name}</dt><dd>{name}</dd>
                 <dt>{t.email}</dt><dd>{email}</dd>

@@ -6,6 +6,7 @@ import { HeroSearch } from "@/components/home/HeroSearch";
 import { OfferCard } from "@/components/offers/OfferCard";
 import { OfferExplorer } from "@/components/offers/OfferExplorer";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
+import { WaitlistSection } from "@/components/waitlist/Waitlist";
 import { href, resolveLocale } from "@/i18n";
 import { getDestinations, getListings } from "@/lib/catalog";
 import { hasCountdown, listingState } from "@/lib/listing";
@@ -31,11 +32,16 @@ export default async function HomePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <HeroSearch locale={locale} dict={dict} />
+      <HeroSearch locale={locale} dict={dict} suggestions={[
+        ...destinations.filter((destination) => listings.some((listing) => listing.destination?.slug === destination.slug)).map((destination) => ({ id: destination.slug, kind: "place" as const, label: destination.name })),
+        ...listings.map((listing) => ({ id: listing.slug, kind: "offer" as const, label: listing.title, detail: listing.destination?.name }))
+      ]} />
+
+      <WaitlistSection locale={locale} t={dict.waitlist} />
 
       <section className="section shell" id="alojamientos">
         <div className="section-heading">
-          <div><h2>{dict.explorer.accommodationsTitle}</h2><p className="section-lead">{dict.explorer.accommodationsLead}</p></div>
+          <div><h2>{dict.explorer.accommodationsTitle}</h2></div>
         </div>
         <OfferExplorer key={JSON.stringify(initial)} mode="accommodations" listings={listings} destinations={destinations} locale={locale} dict={dict} initial={initial} />
       </section>
@@ -62,14 +68,13 @@ export default async function HomePage({ params, searchParams }: Props) {
               <Compass size={24} />
               <h3>{t.emptyTitle}</h3>
               <p>{t.emptyText}</p>
-              <WhatsAppButton placement="home_empty" message={dict.whatsapp.generalMessage} label={dict.whatsapp.offerButton} variant="block" />
+              <WhatsAppButton placement="home_empty" message={dict.whatsapp.generalMessage} label={dict.whatsapp.offerButton} variant="block" redirect={dict.whatsapp.redirect} />
             </div>
           )}
       </section>}
 
-      <section className="how-section">
+      <section className="how-section" id="como-funciona">
         <div className="shell">
-          <p className="eyebrow warm">{t.howEyebrow}</p>
           <h2 className="display-title">{t.howTitle} <em>{t.howTitleEm}</em></h2>
           <ol className="how-steps">{t.howSteps.map((step, index) => <li key={step.title}><span>{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol>
         </div>
@@ -78,7 +83,7 @@ export default async function HomePage({ params, searchParams }: Props) {
       {destinations.length > 0 && (
         <section className="section shell" id="destinos">
           <div className="section-heading">
-            <div><p className="eyebrow warm">{t.destinationsEyebrow}</p><h2>{t.destinationsTitle} <em>{t.destinationsTitleEm}</em></h2></div>
+            <div><h2>{t.destinationsTitle} <em>{t.destinationsTitleEm}</em></h2></div>
             <Link className="text-link" href={href(locale, "/destinos")}>{dict.common.seeAll} <ArrowRight size={17} /></Link>
           </div>
           <div className="destination-grid">

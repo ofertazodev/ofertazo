@@ -6,6 +6,7 @@ import { Analytics } from "@/components/site/Analytics";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
+import { WaitlistInvite } from "@/components/waitlist/Waitlist";
 import { locales, resolveLocale } from "@/i18n";
 import { siteUrl } from "@/lib/whatsapp";
 
@@ -36,7 +37,8 @@ export default async function LocaleLayout({ children, params }: Props) {
         <Header locale={locale} nav={dict.nav} auth={dict.auth} />
         <main>{children}</main>
         <Footer locale={locale} dict={dict} />
-        <WhatsAppButton variant="floating" placement="floating" message={dict.whatsapp.floatingMessage} label={dict.whatsapp.floating} />
+        <WhatsAppButton variant="floating" placement="floating" message={dict.whatsapp.floatingMessage} label={dict.whatsapp.floating} redirect={dict.whatsapp.redirect} />
+        <WaitlistInvite locale={locale} t={dict.waitlist} closeLabel={dict.common.close} />
         <Analytics locale={locale} cookies={dict.cookies} policyLabel={dict.legal.cookies} />
       </body>
     </html>

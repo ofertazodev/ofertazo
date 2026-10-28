@@ -1,5 +1,7 @@
 "use client";
 
+import { SearchSuggest, type Suggestion } from "@/components/site/SearchSuggest";
+import { fuzzyMatches } from "@/lib/fuzzy";
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { Locale } from "@/i18n/config";
@@ -13,7 +15,8 @@ import { PRICE_MAX, PRICE_MIN, PriceRange } from "./PriceRange";
 export type ExplorerFilters = {
   q: string;
   destination: string;
-  type: ProductType | "";
+  /** "trips" = tours and getaways together (home search tab "Circuitos y escapadas"). */
+  type: ProductType | "trips" | "";
   propertyType: PropertyType | "";
   /** Whole Bs; PRICE_MIN / PRICE_MAX mean "no limit" on that side. */
   minPrice: number;
@@ -39,10 +42,6 @@ type Props = {
   dict: Dictionary;
   initial: Partial<ExplorerFilters>;
 };
-
-function normalize(text: string) {
-  return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-}
 
 const DAY_MS = 86_400_000;
 
@@ -72,14 +71,14 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
   const base = useMemo(() => (mode === "accommodations" ? listings.filter((listing) => listing.type === "accommodation") : listings), [listings, mode]);
 
   const results = useMemo(() => {
-    const query = normalize(filters.q.trim());
+    const query = filters.q.trim();
     const minMinor = filters.minPrice > PRICE_MIN ? BigInt(filters.minPrice) * BigInt(100) : null;
     const maxMinor = filters.maxPrice < PRICE_MAX ? BigInt(filters.maxPrice) * BigInt(100) : null;
     const guests = Number(filters.guests) || 0;
     const filtered = base.filter((listing) => {
-      if (query && !normalize(`${listing.title} ${listing.destination?.name ?? ""}`).includes(query)) return false;
+      if (query && !fuzzyMatches(query, `${listing.title} · ${listing.destination?.name ?? ""}`)) return false;
       if (filters.destination && listing.destination?.slug !== filters.destination) return false;
-      if (filters.type && listing.type !== filters.type) return false;
+      if (filters.type === "trips" ? listing.type === "accommodation" : filters.type && listing.type !== filters.type) return false;
       if (filters.propertyType && listing.propertyType !== filters.propertyType) return false;
       if (minMinor !== null && listing.promo.amount < minMinor) return false;
       if (maxMinor !== null && listing.promo.amount > maxMinor) return false;
@@ -101,6 +100,12 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
     return filtered.sort((a, b) => Number(listingState(a) !== "active") - Number(listingState(b) !== "active") || bySort[sort](a, b));
   }, [filters, base, sort]);
 
+  // Places and offers offered as you type in the search box.
+  const suggestions = useMemo<Suggestion[]>(() => [
+    ...destinations.filter((destination) => base.some((listing) => listing.destination?.slug === destination.slug)).map((destination) => ({ id: destination.slug, kind: "place" as const, label: destination.name })),
+    ...base.map((listing) => ({ id: listing.slug, kind: "offer" as const, label: listing.title, detail: listing.destination?.name }))
+  ], [destinations, base]);
+
   const count = <T,>(pick: (listing: Listing) => T, value: T) => base.filter((listing) => pick(listing) === value).length;
   const activeCount = Object.entries(filters).filter(([key, value]) => (key === "minPrice" ? value !== PRICE_MIN : key === "maxPrice" ? value !== PRICE_MAX : Array.isArray(value) ? value.length > 0 : Boolean(value))).length;
   const prices = base.map((listing) => Number(listing.promo.amount / BigInt(100)));
@@ -118,7 +123,15 @@ export function OfferExplorer({ mode, listings, destinations, locale, dict, init
 
         <section className="filter-group">
           <h3>{t.searchByName}</h3>
-          <label className="explorer-search"><Search size={16} /><input value={filters.q} onChange={(event) => set("q", event.target.value)} placeholder={t.searchPlaceholder} aria-label={t.searchByName} /></label>
+          <label className="explorer-search"><Search size={16} /><SearchSuggest
+            value={filters.q}
+            onChange={(text) => set("q", text)}
+            onPick={(item) => setFilters((current) => (item.kind === "place" ? { ...current, q: "", destination: item.id } : { ...current, q: item.label }))}
+            suggestions={suggestions}
+            groupLabels={{ place: t.places, offer: dict.nav.offers }}
+            placeholder={t.searchPlaceholder}
+            ariaLabel={t.searchByName}
+          /></label>
         </section>
 
         <section className="filter-group">

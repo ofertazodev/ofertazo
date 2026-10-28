@@ -22,7 +22,7 @@ export default async function HelpPage({ params }: Props) {
       <h1 className="page-title">{t.title}</h1>
       <p className="section-lead">{t.lead}</p>
       <div className="help-actions">
-        <WhatsAppButton placement="help" message={dict.whatsapp.generalMessage} label={t.whatsappCta} variant="block" />
+        <WhatsAppButton placement="help" message={dict.whatsapp.generalMessage} label={t.whatsappCta} variant="block" redirect={dict.whatsapp.redirect} />
         {supportEmail && <a className="ghost-button outlined" href={`mailto:${supportEmail}`}><Mail size={17} /> {t.emailCta}</a>}
       </div>
       <p className="muted"><Clock size={15} /> {t.hours}</p>

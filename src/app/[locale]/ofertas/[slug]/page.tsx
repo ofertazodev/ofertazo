@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, CalendarDays, Check, ChevronRight, Clock, ExternalLink, Home, MapPin, Moon, Plus, Star, Users } from "lucide-react";
+import { Ban, BadgeCheck, Car, MessageCircle, CalendarDays, Check, ChevronRight, Clock, ExternalLink, Footprints, Gift, Home, MapPin, Moon, Navigation, Plus, Star, Users, X } from "lucide-react";
 import { BookingQuickForm } from "@/components/offers/BookingQuickForm";
 import { Countdown } from "@/components/offers/Countdown";
 import { Gallery } from "@/components/offers/Gallery";
 import { StateNote } from "@/components/offers/OfferCard";
-import { OfferMapLazy } from "@/components/offers/OfferMapLazy";
+import { OfferMapLazy, RouteMapLazy } from "@/components/offers/OfferMapLazy";
 import { TrackView } from "@/components/offers/TrackView";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { fmt, href, locales, plural, resolveLocale, type Dictionary } from "@/i18n";
@@ -49,6 +49,22 @@ function availabilityText(listing: Listing, locale: Locale, dict: Dictionary): s
   return dict.offer.availableOnRequest;
 }
 
+/** "4,5 / 5 · 800 comentarios" in a square, as copied from the TripAdvisor listing by the admin. */
+function TripadvisorScore({ listing, locale, dict }: { listing: Listing; locale: Locale; dict: Dictionary }) {
+  const rating = listing.tripadvisorRating ?? 0;
+  const content = (
+    <>
+      <span className="score-value">{rating.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}<small>/ 5</small></span>
+      <span className="score-stars" aria-hidden="true">{[1, 2, 3, 4, 5].map((n) => <i key={n} className={rating >= n - 0.25 ? "full" : rating >= n - 0.75 ? "half" : ""} />)}</span>
+      {listing.tripadvisorReviewCount !== null && <span className="score-count">{fmt(dict.offer.tripadvisorReviews, { count: listing.tripadvisorReviewCount.toLocaleString(locale) })}</span>}
+      <span className="score-source">{dict.offer.tripadvisor}</span>
+    </>
+  );
+  return listing.tripadvisorUrl
+    ? <a className="score-square" href={listing.tripadvisorUrl} target="_blank" rel="noreferrer">{content}</a>
+    : <div className="score-square">{content}</div>;
+}
+
 export default async function OfferPage({ params }: Props) {
   const { locale, dict } = await resolveLocale(params);
   const { slug } = await params;
@@ -57,11 +73,11 @@ export default async function OfferPage({ params }: Props) {
 
   const t = dict.offer;
   const state = listingState(listing);
-  const bookable = state === "active" && !listing.isSample;
+  const bookable = state === "active";
   const pct = discountPercent(listing.original, listing.promo);
   const saved = formatMoney(savings(listing.original, listing.promo), locale);
   const offerUrl = `${siteUrl}/${locale}/ofertas/${slug}`;
-  const waMessage = fmt(dict.whatsapp.offerMessage, { title: listing.title, url: offerUrl });
+  const questionMessage = fmt(dict.whatsapp.questionMessage, { title: listing.title, url: offerUrl });
   const unit = priceUnitLabel(listing.pricingUnit, dict);
   const mapsUrl = listing.googleMapsUrl ?? (listing.latitude !== null && listing.longitude !== null ? `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}` : null);
 
@@ -97,10 +113,13 @@ export default async function OfferPage({ params }: Props) {
 
         <header className="offer-header">
           <div className="offer-badges">
-            <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>
+            <span className={`offer-discount ${listing.kind === "flash" ? "flash" : ""}`}>{listing.kind === "flash" && <small>{dict.common.flash}</small>}{fmt(dict.common.off, { pct })}</span>
             {listing.verified && <span className="badge-verified"><BadgeCheck size={15} /> {dict.common.verified}</span>}
           </div>
-          <h1>{listing.title}</h1>
+          <div className="offer-title-row">
+            <h1>{listing.title}</h1>
+            {listing.tripadvisorRating !== null && <TripadvisorScore listing={listing} locale={locale} dict={dict} />}
+          </div>
           <p className="offer-subline">
             {listing.destination && <span><MapPin size={15} /> {listing.destination.name}</span>}
             {listing.googleRating !== null && (
@@ -119,6 +138,17 @@ export default async function OfferPage({ params }: Props) {
               <p className="prose">{listing.description}</p>
             </section>
 
+            {listing.perks.length > 0 && (
+              <section className="perks-box">
+                <span className="perks-icon"><Gift size={26} /></span>
+                <div>
+                  <h2>{t.perks}</h2>
+                  <p className="muted">{t.perksLead}</p>
+                  <ul>{listing.perks.map((perk) => <li key={perk}><Check size={16} /> {perk}</li>)}</ul>
+                </div>
+              </section>
+            )}
+
             {details.length > 0 && (
               <section>
                 <h2>{t.details}</h2>
@@ -133,6 +163,39 @@ export default async function OfferPage({ params }: Props) {
                   {listing.amenities.map((amenity) => <li key={amenity}><Check size={16} /> {dict.amenities[amenity]}</li>)}
                   {listing.includes.map((item) => <li key={item}><Check size={16} /> {item}</li>)}
                 </ul>
+              </section>
+            )}
+
+            {listing.excludes.length > 0 && (
+              <section>
+                <h2>{t.excludes}</h2>
+                <ul className="check-list excluded">{listing.excludes.map((item) => <li key={item}><X size={16} /> {item}</li>)}</ul>
+              </section>
+            )}
+
+            {listing.itinerary.length > 0 && (
+              <section>
+                <h2>{t.itinerary}</h2>
+                <ol className="itinerary">
+                  {listing.itinerary.map((day) => (
+                    <li key={day.day}>
+                      <span className="itinerary-day">{fmt(t.day, { n: day.day })}</span>
+                      <div>
+                        <h3>{day.title}</h3>
+                        {day.description && <p>{day.description}</p>}
+                        {day.stops.length > 0 && <p className="itinerary-stops"><Navigation size={14} /> {day.stops.map((stop) => stop.name).join(" → ")}</p>}
+                        {day.overnight && <p className="itinerary-overnight"><Moon size={14} /> {fmt(t.overnight, { place: day.overnight })}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                {listing.itinerary.some((day) => day.stops.length > 0) && (
+                  <>
+                    <h3 className="route-title">{t.routeMap}</h3>
+                    <RouteMapLazy days={listing.itinerary} />
+                    <p className="fine-print">{t.routeNote}</p>
+                  </>
+                )}
               </section>
             )}
 
@@ -157,12 +220,34 @@ export default async function OfferPage({ params }: Props) {
               <p className="prose">{listing.cancellationPolicy || t.noConditions}</p>
             </section>
 
+            {listing.restrictions.length > 0 && (
+              <section>
+                <h2>{t.restrictions}</h2>
+                <ul className="check-list restrictions">{listing.restrictions.map((item) => <li key={item}><Ban size={16} /> {item}</li>)}</ul>
+              </section>
+            )}
+
             {(listing.latitude !== null && listing.longitude !== null) || listing.address ? (
               <section>
                 <h2>{t.location}</h2>
+                {listing.locationNote && <p className="location-note"><Navigation size={16} /> {listing.locationNote}</p>}
                 {listing.address && <p className="muted"><MapPin size={15} /> {listing.address}</p>}
                 {listing.latitude !== null && listing.longitude !== null && <OfferMapLazy latitude={listing.latitude} longitude={listing.longitude} />}
                 {mapsUrl && <a className="map-link" href={mapsUrl} target="_blank" rel="noreferrer"><MapPin size={16} /> {t.openMaps} <ExternalLink size={14} /></a>}
+                {listing.nearbyPlaces.length > 0 && (
+                  <div className="nearby">
+                    <h3>{t.nearby}</h3>
+                    <ul>
+                      {listing.nearbyPlaces.map((placeItem) => (
+                        <li key={placeItem.name}>
+                          <span>{placeItem.name}</span>
+                          <b>{placeItem.mode === "walk" ? <Footprints size={15} /> : <Car size={15} />} {fmt(placeItem.mode === "walk" ? t.nearbyWalk : t.nearbyCar, { n: placeItem.minutes })}</b>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="fine-print">{t.nearbyNote}</p>
+                  </div>
+                )}
               </section>
             ) : null}
 
@@ -186,11 +271,18 @@ export default async function OfferPage({ params }: Props) {
             </div>
             {hasCountdown(listing) && state !== "ended" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} />}
             <StateNote listing={listing} locale={locale} dict={dict} />
-            {bookable ? <BookingQuickForm listing={listing} locale={locale} dict={dict} /> : <p className={listing.isSample ? "sample-note" : "form-message"}>{listing.isSample ? t.sampleNote : t.notBookable}</p>}
+            {bookable ? <BookingQuickForm listing={listing} locale={locale} dict={dict} /> : <p className="form-message">{t.notBookable}</p>}
             <p className="fine-print">{t.priceNote}</p>
             <div className="price-card-help">
-              <p>{dict.whatsapp.offerCta}</p>
-              <WhatsAppButton placement="offer_price_card" message={waMessage} label={dict.whatsapp.payButton} variant="block" offerSlug={listing.slug} />
+              {bookable ? (
+                <>
+                  <p>{dict.whatsapp.offerCta}</p>
+                  {/* Goes through the booking form so every sale becomes a TYA- booking the admin can confirm. */}
+                  <Link className="whatsapp-button whatsapp-block" href={href(locale, `/reservar/${listing.slug}`)}><MessageCircle size={18} /><span>{dict.whatsapp.payButton}</span></Link>
+                </>
+              ) : (
+                <WhatsAppButton placement="offer_price_card" message={questionMessage} label={dict.whatsapp.offerButton} variant="block" offerSlug={listing.slug} redirect={dict.whatsapp.redirect} />
+              )}
             </div>
           </aside>
         </div>
@@ -201,7 +293,7 @@ export default async function OfferPage({ params }: Props) {
           <s>{formatMoney(listing.original, locale)}</s>
           <strong>{formatMoney(listing.promo, locale)}</strong> <small>{unit}</small>
         </div>
-        <WhatsAppButton placement="offer_sticky_bar" message={waMessage} label="WhatsApp" variant="inline" offerSlug={listing.slug} />
+        {!bookable && <WhatsAppButton placement="offer_sticky_bar" message={questionMessage} label="WhatsApp" variant="inline" offerSlug={listing.slug} redirect={dict.whatsapp.redirect} />}
         {bookable && <BookingQuickForm listing={listing} locale={locale} dict={dict} compact />}
       </div>
     </article>

@@ -29,7 +29,7 @@ export default async function VerificationPage({ params }: Props) {
         })}
       </ul>
       <div className="info-card"><Star size={20} /><div><h3>{t.reviewsTitle}</h3><p>{t.reviewsText}</p></div></div>
-      <div className="info-card"><MessageCircle size={20} /><div><h3>{t.problemTitle}</h3><p>{t.problemText}</p><WhatsAppButton placement="verification" message={dict.whatsapp.generalMessage} label={dict.help.whatsappCta} /></div></div>
+      <div className="info-card"><MessageCircle size={20} /><div><h3>{t.problemTitle}</h3><p>{t.problemText}</p><WhatsAppButton placement="verification" message={dict.whatsapp.generalMessage} label={dict.help.whatsappCta} redirect={dict.whatsapp.redirect} /></div></div>
     </section>
   );
 }

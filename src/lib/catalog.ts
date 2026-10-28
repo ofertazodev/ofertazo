@@ -1,7 +1,7 @@
 // Server-side catalog queries. Only published data is readable (RLS), so these are safe with the anon key.
 import { cache } from "react";
 import type { Locale } from "@/i18n/config";
-import { AMENITIES, PROPERTY_TYPES, type Amenity, type Destination, type Extra, type Listing, type PricingUnit, type ProductType, type PropertyType } from "./listing";
+import { AMENITIES, PROPERTY_TYPES, type Amenity, type Destination, type Extra, type ItineraryDay, type Listing, type NearbyPlace, type PricingUnit, type ProductType, type PropertyType, type RoomOption } from "./listing";
 import { money } from "./money";
 import { getServerSupabase } from "./supabase-server";
 
@@ -48,6 +48,17 @@ type OfferRow = {
     google_rating: number | null;
     google_review_count: number | null;
     google_maps_url: string | null;
+    // Optional until the 20261028 migration is applied everywhere.
+    excludes?: string[] | null;
+    restrictions?: string[] | null;
+    perks?: string[] | null;
+    tripadvisor_rating?: number | null;
+    tripadvisor_review_count?: number | null;
+    tripadvisor_url?: string | null;
+    location_note?: string | null;
+    nearby_places?: unknown;
+    room_options?: unknown;
+    itinerary?: unknown;
     translations: Translations | null;
     destination: { name: string; slug: string; translations: Translations | null } | null;
     product_media: { public_url: string | null; alt_text: string; sort_order: number }[] | null;
@@ -59,6 +70,47 @@ type OfferRow = {
 // if the app is deployed before their migration.
 const OFFER_SELECT = `id,kind,title,original_price_minor,promotional_price_minor,currency_code,starts_at,ends_at,max_units,featured,
 product:products!inner(*,destination:destinations(name,slug,translations),product_media(public_url,alt_text,sort_order))`;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
+const str = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : null);
+const num = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? value : null);
+const strings = (value: unknown) => (Array.isArray(value) ? value.map(str).filter((item): item is string => item !== null) : []);
+
+// The JSON columns are edited in the admin panel; anything malformed is skipped instead of breaking the page.
+function parseNearby(value: unknown): NearbyPlace[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).flatMap((item) => {
+    const name = str(item.name);
+    const minutes = num(item.minutes);
+    return name && minutes !== null ? [{ name, minutes, mode: item.mode === "walk" ? "walk" as const : "car" as const }] : [];
+  });
+}
+
+function parseRooms(value: unknown, currency: string): RoomOption[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).flatMap((item) => {
+    const id = str(item.id);
+    const name = str(item.name);
+    const supplement = num(item.supplement_minor) ?? 0;
+    if (!id || !name || !Number.isInteger(supplement)) return [];
+    return [{ id, name, description: str(item.description) ?? "", imageUrl: str(item.image_url), features: strings(item.features), beds: str(item.beds), sizeM2: num(item.size_m2), maxGuests: num(item.max_guests), supplement: money(Math.max(supplement, 0), currency) }];
+  });
+}
+
+function parseItinerary(value: unknown): ItineraryDay[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).flatMap((item, index) => {
+    const title = str(item.title);
+    if (!title) return [];
+    const stops = (Array.isArray(item.stops) ? item.stops : []).filter(isRecord).flatMap((stop) => {
+      const name = str(stop.name);
+      const lat = num(stop.lat);
+      const lng = num(stop.lng);
+      return name && lat !== null && lng !== null ? [{ name, lat, lng }] : [];
+    });
+    return [{ day: num(item.day) ?? index + 1, title, description: str(item.description) ?? "", overnight: str(item.overnight), stops }];
+  });
+}
 
 function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale): Listing {
   const p = row.product;
@@ -83,6 +135,9 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     description: tr?.description || p.description,
     durationLabel: tr?.duration_label || p.duration_label,
     includes: tr?.includes?.length ? tr.includes : p.includes ?? [],
+    excludes: strings(p.excludes),
+    restrictions: strings(p.restrictions),
+    perks: strings(p.perks),
     propertyType: PROPERTY_TYPES.includes(p.property_type as PropertyType) ? (p.property_type as PropertyType) : null,
     pricingUnit: p.pricing_unit,
     capacityMax: p.capacity_max,
@@ -104,6 +159,13 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     googleRating: p.google_rating === null ? null : Number(p.google_rating),
     googleReviewCount: p.google_review_count,
     googleMapsUrl: p.google_maps_url,
+    tripadvisorRating: p.tripadvisor_rating === null || p.tripadvisor_rating === undefined ? null : Number(p.tripadvisor_rating),
+    tripadvisorReviewCount: p.tripadvisor_review_count ?? null,
+    tripadvisorUrl: str(p.tripadvisor_url),
+    locationNote: str(p.location_note),
+    nearbyPlaces: parseNearby(p.nearby_places),
+    rooms: parseRooms(p.room_options, currency),
+    itinerary: parseItinerary(p.itinerary),
     original: money(row.original_price_minor, currency),
     promo: money(row.promotional_price_minor, currency),
     startsAt: row.starts_at,

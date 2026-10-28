@@ -12,8 +12,10 @@ import { formatMoney, money } from "@/lib/money";
 import { supabase } from "@/lib/supabase-browser";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { LlamaLoader } from "@/components/site/TripyaLogo";
+import { WHATSAPP_REDIRECT_SECONDS } from "@/components/site/WhatsAppButton";
+import { guestsLabel } from "./GuestCounter";
 
-const SECONDS = 5;
+const SECONDS = WHATSAPP_REDIRECT_SECONDS;
 
 type Handoff = {
   code: string;
@@ -24,6 +26,10 @@ type Handoff = {
   check_out: string | null;
   nights: number | null;
   guests: number | null;
+  adults?: number | null;
+  children?: number | null;
+  infants?: number | null;
+  room?: { name?: string; total_minor?: number } | null;
   extras: { name?: string }[] | null;
   total_minor: number;
   currency_code: string;
@@ -43,7 +49,8 @@ function buildMessage(data: Handoff, locale: Locale, dict: Dictionary) {
     data.partner ? `${w.handoffPartner}: ${data.partner}` : "",
     data.destination ? `${w.handoffDestination}: ${data.destination}` : "",
     data.check_in && data.check_out ? `${w.handoffDates}: ${date(data.check_in)} → ${date(data.check_out)}${data.nights ? ` (${data.nights} ${w.handoffNights})` : ""}` : "",
-    data.guests ? `${w.handoffGuests}: ${data.guests}` : "",
+    data.adults ? `${w.handoffGuests}: ${guestsLabel({ adults: data.adults, children: data.children ?? 0, infants: data.infants ?? 0 }, dict.booking)}` : data.guests ? `${w.handoffGuests}: ${data.guests}` : "",
+    data.room?.name ? `${w.handoffRoom}: ${data.room.name}${data.room.total_minor ? ` (+ ${formatMoney(money(data.room.total_minor, data.currency_code), locale)})` : ""}` : "",
     data.extras?.length ? `${w.handoffExtras}: ${data.extras.map((extra) => extra.name).filter(Boolean).join(", ")}` : "",
     `${w.handoffTotal}: ${formatMoney(money(data.total_minor, data.currency_code), locale)}`,
     `${w.handoffName}: ${data.contact_name}`,
@@ -56,7 +63,7 @@ function buildMessage(data: Handoff, locale: Locale, dict: Dictionary) {
 
 /**
  * Full-screen "connecting you with our sales agent" step shown after a booking request:
- * the llama trots for 5 seconds, then the traveler is sent to the agent's WhatsApp with the booking details.
+ * the llama trots for a few seconds, then the traveler is sent to the agent's WhatsApp with the booking details.
  */
 export function WhatsAppHandoff({ code, email, locale, dict }: { code: string; email: string; locale: Locale; dict: Dictionary }) {
   const router = useRouter();

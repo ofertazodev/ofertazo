@@ -13,6 +13,10 @@ export type PricingUnit = "per_stay" | "per_night" | "per_person";
 export type OfferKind = "normal" | "flash";
 
 export type Extra = { id: string; name: string; price: Money };
+export type RoomOption = { id: string; name: string; description: string; imageUrl: string | null; features: string[]; beds: string | null; sizeM2: number | null; maxGuests: number | null; supplement: Money };
+export type NearbyPlace = { name: string; minutes: number; mode: "walk" | "car" };
+export type ItineraryStop = { name: string; lat: number; lng: number };
+export type ItineraryDay = { day: number; title: string; description: string; overnight: string | null; stops: ItineraryStop[] };
 export type ListingImage = { url: string; alt: string };
 
 export type Listing = {
@@ -26,6 +30,10 @@ export type Listing = {
   description: string;
   durationLabel: string | null;
   includes: string[];
+  excludes: string[];
+  restrictions: string[];
+  /** What Tripya negotiated for its travelers (welcome drink, gift...). */
+  perks: string[];
   propertyType: PropertyType | null;
   pricingUnit: PricingUnit;
   capacityMax: number | null;
@@ -47,6 +55,14 @@ export type Listing = {
   googleRating: number | null;
   googleReviewCount: number | null;
   googleMapsUrl: string | null;
+  tripadvisorRating: number | null;
+  tripadvisorReviewCount: number | null;
+  tripadvisorUrl: string | null;
+  locationNote: string | null;
+  nearbyPlaces: NearbyPlace[];
+  /** Room types; the first one is the base rate. Empty when the offer has a single option. */
+  rooms: RoomOption[];
+  itinerary: ItineraryDay[];
   original: Money;
   promo: Money;
   startsAt: string | null;

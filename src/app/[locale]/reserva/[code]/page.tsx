@@ -24,7 +24,7 @@ export default async function BookingStatusPage({ params }: Props) {
         code={code}
         locale={locale}
         dict={dict}
-        whatsappSlot={<WhatsAppButton placement="booking_status" message={fmt(dict.whatsapp.bookingMessage, { code })} label={dict.help.whatsappCta} variant="block" />}
+        whatsappSlot={<WhatsAppButton placement="booking_status" message={fmt(dict.whatsapp.bookingMessage, { code })} label={dict.help.whatsappCta} variant="block" redirect={dict.whatsapp.redirect} />}
       />
     </section>
   );

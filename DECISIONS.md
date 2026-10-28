@@ -32,3 +32,12 @@ Registro de decisiones de Ofertazo Travel.
 - **Estado:** pendiente de decisión del negocio
 - **Contexto:** CLAUDE.md define a Ofertazo como merchant of record (cobra el total y paga al proveedor). Se está evaluando un modelo más simple para el piloto: anticipo o comisión cobrados por Ofertazo y el resto pagado en el alojamiento.
 - **Situación actual:** el flujo de reserva termina en estado `pending`. El equipo confirma la disponibilidad, pasa la reserva a `awaiting_payment`, envía las instrucciones de pago por WhatsApp o email y marca `paid` y luego `confirmed` desde el admin. No se integra ningún medio de pago hasta decidir el modelo. La comisión se guarda en 0.
+
+## ADR-0006: Lista de primeros viajeros, habitaciones e itinerarios
+
+- **Estado:** aceptada (2026-10-28)
+- **Contexto:** para el lanzamiento se necesita una base de interesados (nombre, email, WhatsApp, destino de interés y una pregunta de intención). Además, las ofertas deben mostrar tipos de habitación con suplemento, niños y bebés, restricciones, beneficios negociados, lugares cercanos e itinerarios con mapa.
+- **Decisión:** `waitlist_signups` con RLS (solo admins leen y borran) y alta únicamente por la función `join_waitlist()` (`security definer`, valida y deduplica por email). Las habitaciones (`room_options`), lugares cercanos (`nearby_places`) e itinerario (`itinerary`) se guardan como jsonb en `products`, igual que `extras`: hoy no hay inventario por habitación y así el admin los edita junto a la oferta. El suplemento de habitación lo calcula `create_booking_request()` en el servidor y queda copiado en `booking_items.room_option`. Los niños cuentan para la capacidad y el precio por persona; los bebés no.
+- **Pendiente:** cuando exista inventario diario por tipo de habitación, pasar `room_options` a la tabla `room_types` del modelo completo.
+- **Idiomas:** se añaden portugués, alemán, chino, japonés y coreano a la interfaz. Los textos legales en esos idiomas muestran la versión en inglés hasta tener una traducción revisada.
+

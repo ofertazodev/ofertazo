@@ -10,7 +10,7 @@ Plataforma de reservas del piloto (octubre 2026):
 - Reserva en 5 pasos: fechas → personas y extras → datos → pago → confirmación. El precio se calcula en la base de datos y cada reserva recibe un código `OFZ-XXXXXX`.
 - **El pago todavía no está implementado.** El paso de pago es informativo y el equipo envía las instrucciones después de confirmar la disponibilidad. Ver DECISIONS.md, ADR-0005.
 - Páginas por destino, sección Alojamientos con filtros, Ofertas Flash, formulario «Publica tu alojamiento», sello de verificación, Ayuda/SAV y borradores legales.
-- Tres idiomas (`/es`, `/en`, `/fr`) para toda la interfaz. El contenido de cada oferta es traducible desde el admin.
+- Ocho idiomas (`/es`, `/en`, `/fr`, `/pt`, `/de`, `/zh`, `/ja`, `/ko`) para toda la interfaz. El contenido de cada oferta es traducible desde el admin.
 - Panel `/admin` con reservas y cambio de estado, solicitudes de proveedores, alta y edición de ofertas, generador de enlaces UTM y origen de las reservas.
 
 ## Puesta en marcha
@@ -43,7 +43,7 @@ Variables importantes (ver `.env.example`):
 
 ## Rutas públicas
 
-`/{es|en|fr}` portada · `/ofertas` (`?flash=1`, `?q=`) · `/ofertas/{slug}` · `/reservar/{slug}` · `/reserva/{código}` · `/alojamientos` · `/destinos` · `/destinos/{slug}` · `/proveedores` · `/verificacion` · `/ayuda` · `/legal/{terminos|condiciones-reserva|cancelacion|reembolsos|privacidad|cookies}`
+`/{es|en|fr|pt|de|zh|ja|ko}` portada · `/ofertas` (`?flash=1`, `?q=`) · `/ofertas/{slug}` · `/reservar/{slug}` · `/reserva/{código}` · `/alojamientos` · `/destinos` · `/destinos/{slug}` · `/proveedores` · `/verificacion` · `/ayuda` · `/legal/{terminos|condiciones-reserva|cancelacion|reembolsos|privacidad|cookies}`
 
 ## Documentación
 
