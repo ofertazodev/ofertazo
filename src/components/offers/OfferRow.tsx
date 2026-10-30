@@ -7,7 +7,7 @@ import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
 import { fmt, href } from "@/i18n/format";
 import { track } from "@/lib/analytics";
-import { hasCountdown, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
+import { hasCountdown, hasDiscount, hasRoomRange, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
 import { discountPercent, formatMoney, savings } from "@/lib/money";
 import { Countdown } from "./Countdown";
 import { StateNote } from "./OfferCard";
@@ -29,7 +29,7 @@ export function OfferRow({ listing, locale, dict, listName }: Props) {
       <Link href={href(locale, `/ofertas/${listing.slug}`)} className="offer-row-link" onClick={() => track("select_item", { item_id: listing.slug, item_list_name: listName })}>
         <div className="offer-row-image">
           {image ? <Image src={image.url} alt={image.alt} fill sizes="(max-width: 800px) 100vw, 300px" /> : <div className="image-placeholder" />}
-          <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>
+          {hasDiscount(listing) && <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>}
           {listing.isSample && <span className="pill pill-sample">{dict.common.sample}</span>}
         </div>
         <div className="offer-row-body">
@@ -51,9 +51,9 @@ export function OfferRow({ listing, locale, dict, listName }: Props) {
         </div>
         <div className="offer-row-price">
           <span className="offer-row-price-label">{dict.explorer.priceLabel} {priceUnitLabel(listing.pricingUnit, dict)}</span>
-          <span className="old-price">{fmt(dict.common.before, { amount: formatMoney(listing.original, locale) })}</span>
+          {hasDiscount(listing) ? <span className="old-price">{fmt(dict.common.before, { amount: formatMoney(listing.original, locale) })}</span> : hasRoomRange(listing) && <span className="old-price no-strike">{dict.common.from}</span>}
           <strong>{formatMoney(listing.promo, locale)}</strong>
-          <span className="savings">{fmt(dict.common.save, { amount: formatMoney(savings(listing.original, listing.promo), locale) })}</span>
+          {hasDiscount(listing) && <span className="savings">{fmt(dict.common.save, { amount: formatMoney(savings(listing.original, listing.promo), locale) })}</span>}
           <span className="dark-button offer-row-cta">{dict.explorer.seeDetail}</span>
         </div>
       </Link>

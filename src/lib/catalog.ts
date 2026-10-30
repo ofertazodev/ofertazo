@@ -5,7 +5,18 @@ import { AMENITIES, PROPERTY_TYPES, type Amenity, type Destination, type Extra, 
 import { money } from "./money";
 import { getServerSupabase } from "./supabase-server";
 
-type TranslatedFields = Partial<Record<"title" | "description" | "booking_conditions" | "cancellation_policy" | "name" | "duration_label", string>> & { includes?: string[] };
+type RoomTranslation = { name?: string; description?: string; beds?: string; features?: string[] };
+type DayTranslation = { title?: string; description?: string; overnight?: string };
+/** Per-locale overrides of the Spanish content. Lists replace the Spanish list; nearby names and itinerary days go by position, rooms by id. */
+type TranslatedFields = Partial<Record<"title" | "description" | "booking_conditions" | "cancellation_policy" | "name" | "duration_label" | "location_note", string>> & {
+  includes?: string[];
+  excludes?: string[];
+  restrictions?: string[];
+  perks?: string[];
+  nearby_names?: string[];
+  rooms?: Record<string, RoomTranslation>;
+  itinerary?: DayTranslation[];
+};
 type Translations = Partial<Record<Locale, TranslatedFields>>;
 
 type OfferRow = {
@@ -135,9 +146,9 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     description: tr?.description || p.description,
     durationLabel: tr?.duration_label || p.duration_label,
     includes: tr?.includes?.length ? tr.includes : p.includes ?? [],
-    excludes: strings(p.excludes),
-    restrictions: strings(p.restrictions),
-    perks: strings(p.perks),
+    excludes: tr?.excludes?.length ? tr.excludes : strings(p.excludes),
+    restrictions: tr?.restrictions?.length ? tr.restrictions : strings(p.restrictions),
+    perks: tr?.perks?.length ? tr.perks : strings(p.perks),
     propertyType: PROPERTY_TYPES.includes(p.property_type as PropertyType) ? (p.property_type as PropertyType) : null,
     pricingUnit: p.pricing_unit,
     capacityMax: p.capacity_max,
@@ -162,10 +173,16 @@ function toListing(row: OfferRow, remaining: Map<string, number>, locale: Locale
     tripadvisorRating: p.tripadvisor_rating === null || p.tripadvisor_rating === undefined ? null : Number(p.tripadvisor_rating),
     tripadvisorReviewCount: p.tripadvisor_review_count ?? null,
     tripadvisorUrl: str(p.tripadvisor_url),
-    locationNote: str(p.location_note),
-    nearbyPlaces: parseNearby(p.nearby_places),
-    rooms: parseRooms(p.room_options, currency),
-    itinerary: parseItinerary(p.itinerary),
+    locationNote: tr?.location_note || str(p.location_note),
+    nearbyPlaces: parseNearby(p.nearby_places).map((place, index) => ({ ...place, name: tr?.nearby_names?.[index] || place.name })),
+    rooms: parseRooms(p.room_options, currency).map((room) => {
+      const roomTr = tr?.rooms?.[room.id];
+      return roomTr ? { ...room, name: roomTr.name || room.name, description: roomTr.description || room.description, beds: roomTr.beds || room.beds, features: roomTr.features?.length ? roomTr.features : room.features } : room;
+    }),
+    itinerary: parseItinerary(p.itinerary).map((day, index) => {
+      const dayTr = tr?.itinerary?.[index];
+      return dayTr ? { ...day, title: dayTr.title || day.title, description: dayTr.description || day.description, overnight: dayTr.overnight || day.overnight } : day;
+    }),
     original: money(row.original_price_minor, currency),
     promo: money(row.promotional_price_minor, currency),
     startsAt: row.starts_at,

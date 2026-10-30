@@ -100,6 +100,16 @@ export function priceUnitLabel(unit: PricingUnit, dict: Dictionary): string {
   return dict.common.perStay;
 }
 
+/** Offers at the public price (no negotiated discount yet) show no "-0%" badge, struck price or savings. */
+export function hasDiscount(listing: Pick<Listing, "original" | "promo">): boolean {
+  return listing.original.amount > listing.promo.amount;
+}
+
+/** The shown price is the cheapest room, so it reads "From Bs X" when other rooms cost more. */
+export function hasRoomRange(listing: Pick<Listing, "rooms">): boolean {
+  return listing.rooms.some((room) => room.supplement.amount > BigInt(0));
+}
+
 /** Flash offers show a countdown only when they really have an end date. */
 export function hasCountdown(listing: Pick<Listing, "kind" | "endsAt">): boolean {
   return listing.kind === "flash" && Boolean(listing.endsAt);

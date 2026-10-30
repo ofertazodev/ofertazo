@@ -1010,3 +1010,7 @@ a.score-square:hover { transform:translateY(-3px); }
 .icon-danger { display:grid; place-items:center; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--muted); }
 .icon-danger:hover { border-color:#9d3d2d; color:#9d3d2d; }
 @media (max-width:800px) { .waitlist-breakdown { grid-template-columns:1fr; } .nearby-row { grid-template-columns:1fr 70px; } }
+
+/* ---------- offers at the public price: "Desde" instead of a struck price ---------- */
+.old-price.no-strike { text-decoration:none; color:var(--muted); }
+.savings { color:var(--pine); }

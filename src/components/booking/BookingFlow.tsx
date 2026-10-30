@@ -60,7 +60,10 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
   }
 
   const people = guests.adults + guests.children;
-  const room = listing.rooms.find((item) => item.id === roomId) ?? null;
+  // The chosen room, or (when it is too small for the group) the first room that fits.
+  const fitsGroup = (option: { maxGuests: number | null }) => option.maxGuests === null || people <= option.maxGuests;
+  const chosenRoom = listing.rooms.find((item) => item.id === roomId);
+  const room = (chosenRoom && fitsGroup(chosenRoom) ? chosenRoom : listing.rooms.find(fitsGroup)) ?? null;
 
   // Display only: the server recomputes the same total in create_booking_request().
   const estimate = useMemo(() => {
@@ -184,13 +187,13 @@ export function BookingFlow({ listing, locale, dict, initial, whatsappSlot }: Pr
                 <fieldset className="room-list">
                   <legend>{t.chooseRoom}</legend>
                   {listing.rooms.map((option) => {
-                    const tooSmall = option.maxGuests !== null && people > option.maxGuests;
+                    const tooSmall = !fitsGroup(option);
                     const supplement = option.supplement.amount > BigInt(0) ? fmt(listing.pricingUnit === "per_night" ? t.roomSupplementNight : t.roomSupplement, { amount: formatMoney(option.supplement, locale) }) : t.roomIncluded;
                     return (
-                      <label key={option.id} className={`room-option ${roomId === option.id ? "active" : ""} ${tooSmall ? "disabled" : ""}`}>
-                        <input type="radio" name="room" value={option.id} checked={roomId === option.id} disabled={tooSmall} onChange={() => setRoomId(option.id)} />
+                      <label key={option.id} className={`room-option ${room?.id === option.id ? "active" : ""} ${tooSmall ? "disabled" : ""}`}>
+                        <input type="radio" name="room" value={option.id} checked={room?.id === option.id} disabled={tooSmall} onChange={() => setRoomId(option.id)} />
                         <div className="room-option-head">
-                          <span className="room-radio">{roomId === option.id && <Check size={14} />}</span>
+                          <span className="room-radio">{room?.id === option.id && <Check size={14} />}</span>
                           <strong>{option.name}</strong>
                           <b>{supplement}</b>
                         </div>

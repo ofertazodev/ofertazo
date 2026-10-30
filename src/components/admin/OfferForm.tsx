@@ -262,7 +262,8 @@ export function OfferForm({ user, offerId, onClose, presetProviderId = null }: P
         location_note: textOrNull(form.locationNote),
         nearby_places: nearby.map((place) => ({ name: place.name.trim(), minutes: Number(place.minutes), mode: place.mode })),
         room_options: rooms.map((room) => ({
-          id: slugify(room.name) || room.id, name: room.name.trim(), description: room.description.trim(), image_url: textOrNull(room.imageUrl),
+          // Saved rooms keep their id: bookings and translations refer to it.
+          id: room.id.startsWith("room-") ? slugify(room.name) || room.id : room.id, name: room.name.trim(), description: room.description.trim(), image_url: textOrNull(room.imageUrl),
           features: room.features.split(",").map((item) => item.trim()).filter(Boolean), beds: textOrNull(room.beds),
           size_m2: intOrNull(room.sizeM2), max_guests: intOrNull(room.maxGuests), supplement_minor: inputToMinor(room.supplement || "0")
         })),

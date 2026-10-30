@@ -12,7 +12,7 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { fmt, href, locales, plural, resolveLocale, type Dictionary } from "@/i18n";
 import { getListingBySlug } from "@/lib/catalog";
 import { formatDate } from "@/lib/dates";
-import { hasCountdown, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
+import { hasCountdown, hasDiscount, hasRoomRange, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
 import { discountPercent, formatMoney, savings } from "@/lib/money";
 import type { Locale } from "@/i18n/config";
 import { siteUrl } from "@/lib/whatsapp";
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const listing = await getListingBySlug(slug, locale);
   if (!listing) return {};
-  const description = `${formatMoney(listing.promo, locale)} · -${discountPercent(listing.original, listing.promo)}% · ${listing.description}`.slice(0, 160);
+  const description = [formatMoney(listing.promo, locale), hasDiscount(listing) ? `-${discountPercent(listing.original, listing.promo)}%` : "", listing.description].filter(Boolean).join(" · ").slice(0, 160);
   return {
     title: listing.title,
     description,
@@ -113,7 +113,7 @@ export default async function OfferPage({ params }: Props) {
 
         <header className="offer-header">
           <div className="offer-badges">
-            <span className={`offer-discount ${listing.kind === "flash" ? "flash" : ""}`}>{listing.kind === "flash" && <small>{dict.common.flash}</small>}{fmt(dict.common.off, { pct })}</span>
+            {hasDiscount(listing) && <span className={`offer-discount ${listing.kind === "flash" ? "flash" : ""}`}>{listing.kind === "flash" && <small>{dict.common.flash}</small>}{fmt(dict.common.off, { pct })}</span>}
             {listing.verified && <span className="badge-verified"><BadgeCheck size={15} /> {dict.common.verified}</span>}
           </div>
           <div className="offer-title-row">
@@ -265,9 +265,9 @@ export default async function OfferPage({ params }: Props) {
 
           <aside className="price-card" id="reservar">
             <div className="price-rows">
-              <div><span>{t.regularPrice}</span><s>{formatMoney(listing.original, locale)}</s></div>
-              <div className="price-main"><span>{t.exclusivePrice}</span><strong>{formatMoney(listing.promo, locale)}</strong><small>{unit}</small></div>
-              <p className="savings-badge">{fmt(t.youSave, { amount: saved, pct })}</p>
+              {hasDiscount(listing) && <div><span>{t.regularPrice}</span><s>{formatMoney(listing.original, locale)}</s></div>}
+              <div className="price-main"><span>{hasDiscount(listing) ? t.exclusivePrice : dict.explorer.priceLabel}</span>{hasRoomRange(listing) && <small>{dict.common.from}</small>}<strong>{formatMoney(listing.promo, locale)}</strong><small>{unit}</small></div>
+              {hasDiscount(listing) && <p className="savings-badge">{fmt(t.youSave, { amount: saved, pct })}</p>}
             </div>
             {hasCountdown(listing) && state !== "ended" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} />}
             <StateNote listing={listing} locale={locale} dict={dict} />
@@ -290,7 +290,7 @@ export default async function OfferPage({ params }: Props) {
 
       <div className="sticky-book-bar">
         <div>
-          <s>{formatMoney(listing.original, locale)}</s>
+          {hasDiscount(listing) ? <s>{formatMoney(listing.original, locale)}</s> : hasRoomRange(listing) && <small>{dict.common.from}</small>}
           <strong>{formatMoney(listing.promo, locale)}</strong> <small>{unit}</small>
         </div>
         {!bookable && <WhatsAppButton placement="offer_sticky_bar" message={questionMessage} label="WhatsApp" variant="inline" offerSlug={listing.slug} redirect={dict.whatsapp.redirect} />}

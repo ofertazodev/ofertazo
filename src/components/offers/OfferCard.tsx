@@ -8,7 +8,7 @@ import type { Dictionary } from "@/i18n/dictionaries/es";
 import { fmt, href } from "@/i18n/format";
 import { track } from "@/lib/analytics";
 import { formatDate } from "@/lib/dates";
-import { hasCountdown, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
+import { hasCountdown, hasDiscount, hasRoomRange, listingState, priceUnitLabel, type Listing } from "@/lib/listing";
 import { discountPercent, formatMoney, savings } from "@/lib/money";
 import { Countdown } from "./Countdown";
 import { LOW_STOCK, ScarcityBadge } from "./ScarcityBadge";
@@ -28,7 +28,7 @@ export function OfferCard({ listing, locale, dict, listName }: Props) {
         <div className="offer-image">
           {image ? <Image src={image.url} alt={image.alt} fill sizes="(max-width: 800px) 100vw, 380px" /> : <div className="image-placeholder" />}
           <div className="offer-topline">
-            <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>
+            {hasDiscount(listing) && <span className={`pill ${listing.kind === "flash" ? "pill-flash" : ""}`}>{listing.kind === "flash" ? `${dict.common.flash} · ` : ""}{fmt(dict.common.off, { pct })}</span>}
             {listing.isSample ? <span className="pill pill-sample">{dict.common.sample}</span> : hasCountdown(listing) && state === "active" && listing.endsAt && <Countdown endsAt={listing.endsAt} common={dict.common} compact />}
           </div>
           {listing.destination && <span className="image-location"><MapPin size={14} /> {listing.destination.name}</span>}
@@ -44,9 +44,9 @@ export function OfferCard({ listing, locale, dict, listName }: Props) {
           <StateNote listing={listing} locale={locale} dict={dict} insideLink />
           <div className="offer-bottom">
             <div>
-              <span className="old-price">{fmt(dict.common.before, { amount: formatMoney(listing.original, locale) })}</span>
+              {hasDiscount(listing) ? <span className="old-price">{fmt(dict.common.before, { amount: formatMoney(listing.original, locale) })}</span> : hasRoomRange(listing) && <span className="old-price no-strike">{dict.common.from}</span>}
               <strong>{formatMoney(listing.promo, locale)}</strong><small> {priceUnitLabel(listing.pricingUnit, dict)}</small>
-              <span className="savings">{fmt(dict.common.save, { amount: formatMoney(savings(listing.original, listing.promo), locale) })}</span>
+              {hasDiscount(listing) && <span className="savings">{fmt(dict.common.save, { amount: formatMoney(savings(listing.original, listing.promo), locale) })}</span>}
             </div>
             <span className="arrow-button" aria-hidden="true"><ArrowRight size={18} /></span>
           </div>
