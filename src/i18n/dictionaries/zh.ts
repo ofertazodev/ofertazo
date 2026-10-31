@@ -149,7 +149,6 @@ export const zh: Dictionary = {
     emptyText: "我们正在验证首批住宿。给我们留言，我们会通知你。"
   },
   waitlist: {
-    kicker: "TRIPYA 即将上线",
     llamaHello: "你好，旅行者！",
     title: "加入",
     titleEm: "Tripya 大家庭。",
@@ -162,8 +161,8 @@ export const zh: Dictionary = {
     email: "电子邮箱",
     whatsapp: "WhatsApp 号码",
     whatsappHint: "选填，如果你希望通过 WhatsApp 接收消息。",
-    destinationQuestion: "你最想探索玻利维亚的哪个目的地？",
-    destinations: { tarija: "塔里哈", santa_cruz: "圣克鲁斯", la_paz_uyuni: "拉巴斯和乌尤尼盐沼", sucre_potosi: "苏克雷和波托西", cochabamba: "科恰班巴", other: "玻利维亚其他目的地" },
+    destinationQuestion: "你最想探索玻利维亚的哪个省？",
+    destinations: { la_paz: "拉巴斯", oruro: "奥鲁罗", potosi: "波托西（乌尤尼盐沼）", cochabamba: "科恰班巴", chuquisaca: "丘基萨卡（苏克雷）", tarija: "塔里哈", santa_cruz: "圣克鲁斯", beni: "贝尼", pando: "潘多" },
     interestQuestion: "最后一个问题：如果你在 Tripya 上找到不错的住宿优惠，你会在下次旅行中使用吗？",
     interests: { yes: "会，我很感兴趣！", depends: "取决于优惠和价格", curious: "我只是想了解一下平台" },
     updates: "我希望接收上线消息以及首批旅行者专属折扣。",

@@ -149,7 +149,6 @@ export const ja: Dictionary = {
     emptyText: "最初の宿泊施設を確認中です。メッセージをいただければお知らせします。"
   },
   waitlist: {
-    kicker: "TRIPYA ローンチ",
     llamaHello: "こんにちは、旅人さん！",
     title: "Tripya ファミリーに",
     titleEm: "参加しよう。",
@@ -162,8 +161,8 @@ export const ja: Dictionary = {
     email: "メールアドレス",
     whatsapp: "WhatsApp 番号",
     whatsappHint: "任意。WhatsApp でお知らせを受け取りたい場合。",
-    destinationQuestion: "ボリビアのどの目的地を訪れてみたいですか？",
-    destinations: { tarija: "タリハ", santa_cruz: "サンタクルス", la_paz_uyuni: "ラパスとウユニ塩湖", sucre_potosi: "スクレとポトシ", cochabamba: "コチャバンバ", other: "ボリビアのその他の目的地" },
+    destinationQuestion: "ボリビアのどの県を訪れてみたいですか？",
+    destinations: { la_paz: "ラパス", oruro: "オルロ", potosi: "ポトシ（ウユニ塩湖）", cochabamba: "コチャバンバ", chuquisaca: "チュキサカ（スクレ）", tarija: "タリハ", santa_cruz: "サンタクルス", beni: "ベニ", pando: "パンド" },
     interestQuestion: "最後の質問です：Tripya でお得な宿泊プランを見つけたら、次の旅行で利用したいですか？",
     interests: { yes: "はい、興味があります！", depends: "プランと価格次第です", curious: "プラットフォームを見てみたいだけです" },
     updates: "ローンチの最新情報と最初の旅行者向けの特別割引を受け取りたい。",

@@ -149,7 +149,6 @@ export const ko: Dictionary = {
     emptyText: "첫 숙소들을 검증하고 있어요. 메시지를 남기면 알려드릴게요."
   },
   waitlist: {
-    kicker: "TRIPYA 출시",
     llamaHello: "안녕하세요, 여행자님!",
     title: "Tripya 가족이",
     titleEm: "되어 주세요.",
@@ -162,8 +161,8 @@ export const ko: Dictionary = {
     email: "이메일",
     whatsapp: "WhatsApp 번호",
     whatsappHint: "선택 사항. WhatsApp으로 소식을 받고 싶다면 입력하세요.",
-    destinationQuestion: "볼리비아에서 어느 여행지를 가보고 싶나요?",
-    destinations: { tarija: "타리하", santa_cruz: "산타크루스", la_paz_uyuni: "라파스와 우유니 소금사막", sucre_potosi: "수크레와 포토시", cochabamba: "코차밤바", other: "볼리비아의 다른 여행지" },
+    destinationQuestion: "볼리비아의 어느 주를 가보고 싶나요?",
+    destinations: { la_paz: "라파스", oruro: "오루로", potosi: "포토시(우유니 소금사막)", cochabamba: "코차밤바", chuquisaca: "추키사카(수크레)", tarija: "타리하", santa_cruz: "산타크루스", beni: "베니", pando: "판도" },
     interestQuestion: "마지막 질문: Tripya에서 좋은 숙소 특가를 찾는다면 다음 여행에 이용하시겠어요?",
     interests: { yes: "네, 관심 있어요!", depends: "특가와 가격에 따라 달라요", curious: "플랫폼만 둘러보고 싶어요" },
     updates: "출시 소식과 첫 여행자 전용 특별 할인을 받고 싶어요.",

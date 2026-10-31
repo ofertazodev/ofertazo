@@ -9,7 +9,8 @@ import { href } from "@/i18n/format";
 import { getAttribution } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase-browser";
 
-export const WAITLIST_DESTINATIONS = ["tarija", "santa_cruz", "la_paz_uyuni", "sucre_potosi", "cochabamba", "other"] as const;
+/** The nine departments of Bolivia. */
+export const WAITLIST_DESTINATIONS = ["la_paz", "oruro", "potosi", "cochabamba", "chuquisaca", "tarija", "santa_cruz", "beni", "pando"] as const;
 export const WAITLIST_INTERESTS = ["yes", "depends", "curious"] as const;
 type WaitlistDestination = (typeof WAITLIST_DESTINATIONS)[number];
 type WaitlistInterest = (typeof WAITLIST_INTERESTS)[number];

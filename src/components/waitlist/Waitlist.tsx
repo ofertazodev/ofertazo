@@ -33,7 +33,6 @@ export function WaitlistSection({ locale, t }: Props) {
       <div className="shell waitlist-inner">
         <WaitlistLlama hello={t.llamaHello} />
         <div className="waitlist-copy">
-          <p className="eyebrow warm">{t.kicker}</p>
           <h2 id="waitlist-title">{t.title} <em>{t.titleEm}</em></h2>
           <p className="waitlist-lead">{t.lead}</p>
           <ul className="waitlist-perks">
@@ -80,7 +79,6 @@ export function WaitlistInvite({ locale, t, closeLabel }: Props & { closeLabel: 
       <div className="waitlist-modal-head">
         <WaitlistLlama hello={t.llamaHello} size="md" />
         <div>
-          <p className="modal-kicker">{t.kicker}</p>
           <h2>{t.title} <em>{t.titleEm}</em></h2>
           <p className="modal-copy">{t.time}</p>
         </div>

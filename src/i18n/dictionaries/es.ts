@@ -150,7 +150,6 @@ export const es = {
     emptyText: "Estamos verificando los primeros alojamientos. Escríbenos y te avisamos."
   },
   waitlist: {
-    kicker: "LANZAMIENTO TRIPYA",
     llamaHello: "¡Hola, viajero!",
     title: "Únete a la familia",
     titleEm: "Tripya.",
@@ -163,8 +162,8 @@ export const es = {
     email: "Correo electrónico",
     whatsapp: "Número de WhatsApp",
     whatsappHint: "Opcional, si prefieres recibir novedades por WhatsApp.",
-    destinationQuestion: "¿Qué destino de Bolivia te gustaría descubrir?",
-    destinations: { tarija: "Tarija", santa_cruz: "Santa Cruz", la_paz_uyuni: "La Paz y el Salar de Uyuni", sucre_potosi: "Sucre y Potosí", cochabamba: "Cochabamba", other: "Otros destinos de Bolivia" },
+    destinationQuestion: "¿Qué departamento de Bolivia te gustaría descubrir?",
+    destinations: { la_paz: "La Paz", oruro: "Oruro", potosi: "Potosí (Salar de Uyuni)", cochabamba: "Cochabamba", chuquisaca: "Chuquisaca (Sucre)", tarija: "Tarija", santa_cruz: "Santa Cruz", beni: "Beni", pando: "Pando" },
     interestQuestion: "Una última pregunta: si encontraras buenas ofertas de alojamiento en Tripya, ¿te interesaría utilizarlas para tu próximo viaje?",
     interests: { yes: "¡Sí, me interesa!", depends: "Depende de la oferta y el precio", curious: "Solo quiero conocer la plataforma" },
     updates: "Quiero recibir novedades sobre el lanzamiento y descuentos especiales para los primeros viajeros.",

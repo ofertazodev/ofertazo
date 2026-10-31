@@ -149,7 +149,6 @@ export const de: Dictionary = {
     emptyText: "Wir prüfen gerade die ersten Unterkünfte. Schreib uns und wir melden uns."
   },
   waitlist: {
-    kicker: "TRIPYA-START",
     llamaHello: "Hallo, Reisende!",
     title: "Werde Teil der",
     titleEm: "Tripya-Familie.",
@@ -162,8 +161,8 @@ export const de: Dictionary = {
     email: "E-Mail",
     whatsapp: "WhatsApp-Nummer",
     whatsappHint: "Optional, falls du Neuigkeiten lieber per WhatsApp bekommst.",
-    destinationQuestion: "Welches Reiseziel in Bolivien möchtest du entdecken?",
-    destinations: { tarija: "Tarija", santa_cruz: "Santa Cruz", la_paz_uyuni: "La Paz und der Salar de Uyuni", sucre_potosi: "Sucre und Potosí", cochabamba: "Cochabamba", other: "Andere Reiseziele in Bolivien" },
+    destinationQuestion: "Welches Departamento Boliviens möchtest du entdecken?",
+    destinations: { la_paz: "La Paz", oruro: "Oruro", potosi: "Potosí (Salar de Uyuni)", cochabamba: "Cochabamba", chuquisaca: "Chuquisaca (Sucre)", tarija: "Tarija", santa_cruz: "Santa Cruz", beni: "Beni", pando: "Pando" },
     interestQuestion: "Eine letzte Frage: Wenn du gute Unterkunftsangebote bei Tripya findest, würdest du sie für deine nächste Reise nutzen?",
     interests: { yes: "Ja, das interessiert mich!", depends: "Kommt auf Angebot und Preis an", curious: "Ich möchte die Plattform nur kennenlernen" },
     updates: "Ich möchte Neuigkeiten zum Start und Sonderrabatte für die ersten Reisenden erhalten.",

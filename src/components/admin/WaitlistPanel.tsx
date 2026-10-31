@@ -20,7 +20,9 @@ type Signup = {
   created_at: string;
 };
 
-const destinationLabel = (value: string) => es.waitlist.destinations[value as keyof typeof es.waitlist.destinations] ?? value;
+// Answers given before the form listed the nine departments.
+const LEGACY_DESTINATIONS: Record<string, string> = { la_paz_uyuni: "La Paz y el Salar de Uyuni (anterior)", sucre_potosi: "Sucre y Potosí (anterior)", other: "Otros destinos (anterior)" };
+const destinationLabel = (value: string) => es.waitlist.destinations[value as keyof typeof es.waitlist.destinations] ?? LEGACY_DESTINATIONS[value] ?? value;
 const interestLabel = (value: string) => es.waitlist.interests[value as keyof typeof es.waitlist.interests] ?? value;
 const dateTime = (iso: string) => new Intl.DateTimeFormat("es-BO", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/La_Paz" }).format(new Date(iso));
 
@@ -102,7 +104,7 @@ export function WaitlistPanel() {
       <div className="waitlist-breakdown">
         <div className="admin-panel-card">
           <h2>Destinos de interés</h2>
-          {WAITLIST_DESTINATIONS.map((value) => <Bar key={value} label={destinationLabel(value)} value={count((row) => row.destination === value)} total={rows.length} />)}
+          {[...WAITLIST_DESTINATIONS, ...Object.keys(LEGACY_DESTINATIONS).filter((value) => rows.some((row) => row.destination === value))].map((value) => <Bar key={value} label={destinationLabel(value)} value={count((row) => row.destination === value)} total={rows.length} />)}
         </div>
         <div className="admin-panel-card">
           <h2>¿Usarían Tripya?</h2>
