@@ -23,6 +23,14 @@ Criterios de seguridad de Ofertazo Travel. Revisar antes de aceptar pagos reales
 - `.env.local` está ignorado en git. Solo se usan claves públicas (`NEXT_PUBLIC_*`, anon key) en el navegador.
 - `SUPABASE_SERVICE_ROLE_KEY` nunca se usa en el cliente. La app actual no la necesita.
 
+## Panel de socios
+
+- Solo entran a `/socios` las cuentas que un admin registró (`grant_partner_access`). Una cuenta sin invitación no ve ningún dato.
+- **Los socios nunca publican.** No tienen permisos de escritura sobre `products`, `offers`, `product_media`, `inventory_units`, `destinations` ni sobre el bucket `offer-media`. Solo el admin pasa una propuesta a la página con `publish_partner_proposal()`.
+- Sus datos y fotos son privados: tablas `partner_*` sin lectura para `anon` ni para otros socios, y bucket `partner-media` privado (URLs firmadas de 1 hora).
+- `status` y `product_id` de los borradores no tienen permiso de `UPDATE` para el rol `authenticated`: solo cambian dentro de las funciones SQL, y un trigger valida las transiciones.
+- Los socios no leen la tabla `providers` (tiene notas internas como la comisión); ven solo sus datos públicos con `partner_me()`.
+
 ## Cabeceras HTTP
 
 `next.config.ts` añade `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, `Permissions-Policy` y HSTS.

@@ -14,6 +14,7 @@ export const es = {
     publish: "Publica tu alojamiento",
     login: "Iniciar sesión",
     admin: "Panel admin",
+    partnerPanel: "Panel de socio",
     logout: "Cerrar sesión",
     menu: "Abrir menú",
     language: "Idioma",

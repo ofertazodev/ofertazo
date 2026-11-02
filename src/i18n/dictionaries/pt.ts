@@ -14,6 +14,7 @@ export const pt: Dictionary = {
     publish: "Anuncie sua hospedagem",
     login: "Entrar",
     admin: "Painel admin",
+    partnerPanel: "Painel do parceiro",
     logout: "Sair",
     menu: "Abrir menu",
     language: "Idioma",

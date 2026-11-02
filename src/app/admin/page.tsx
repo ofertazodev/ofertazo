@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, Handshake, LineChart, LogOut, MapPin, Package, ShieldAlert, Users } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, CalendarCheck, ExternalLink, Handshake, LineChart, LogOut, MapPin, MessagesSquare, Package, ShieldAlert, Users } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 import { BookingsPanel } from "@/components/admin/BookingsPanel";
@@ -10,13 +10,14 @@ import { DestinationsPanel } from "@/components/admin/DestinationsPanel";
 import { OffersPanel } from "@/components/admin/OffersPanel";
 import { OverviewPanel } from "@/components/admin/OverviewPanel";
 import { PartnersPanel } from "@/components/admin/PartnersPanel";
+import { ProposalsPanel } from "@/components/admin/ProposalsPanel";
 import { StatsPanel } from "@/components/admin/StatsPanel";
 import { WaitlistPanel } from "@/components/admin/WaitlistPanel";
 import { markInternalVisitor } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase-browser";
 import { LlamaLoader, TripyaLogo } from "@/components/site/TripyaLogo";
 
-type Tab = "overview" | "waitlist" | "stats" | "bookings" | "offers" | "partners" | "destinations" | "applications";
+type Tab = "overview" | "waitlist" | "stats" | "bookings" | "offers" | "proposals" | "partners" | "destinations" | "applications";
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "overview", label: "Resumen", icon: BarChart3 },
@@ -24,6 +25,7 @@ const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "stats", label: "Estadísticas", icon: LineChart },
   { id: "bookings", label: "Reservas", icon: CalendarCheck },
   { id: "offers", label: "Ofertas", icon: Package },
+  { id: "proposals", label: "Propuestas", icon: MessagesSquare },
   { id: "partners", label: "Socios", icon: Handshake },
   { id: "destinations", label: "Destinos", icon: MapPin },
   { id: "applications", label: "Solicitudes", icon: BriefcaseBusiness }
@@ -135,6 +137,7 @@ export default function AdminPage() {
         {tab === "stats" && <StatsPanel />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "offers" && <OffersPanel key={presetProvider ?? "list"} user={user} presetProviderId={presetProvider} onPresetUsed={() => setPresetProvider(null)} />}
+        {tab === "proposals" && <ProposalsPanel />}
         {tab === "partners" && <PartnersPanel user={user} onNewOffer={(id) => { setPresetProvider(id); setTab("offers"); }} />}
         {tab === "destinations" && <DestinationsPanel />}
         {tab === "applications" && <ApplicationsPanel user={user} />}

@@ -14,6 +14,7 @@ export const de: Dictionary = {
     publish: "Unterkunft anbieten",
     login: "Anmelden",
     admin: "Admin-Bereich",
+    partnerPanel: "Partnerbereich",
     logout: "Abmelden",
     menu: "Menü öffnen",
     language: "Sprache",

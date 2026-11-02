@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Globe, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ArrowRight, Briefcase, Globe, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { LOCALE_COOKIE, localeNames, locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/es";
@@ -22,15 +22,17 @@ export function Header({ locale, nav, auth }: Props) {
   const [authOpen, setAuthOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPartner, setIsPartner] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
     const client = supabase;
     async function refresh(nextUser: User | null) {
       setUser(nextUser);
-      if (!nextUser) { setIsAdmin(false); return; }
+      if (!nextUser) { setIsAdmin(false); setIsPartner(false); return; }
       const { data } = await client.from("user_roles").select("role").eq("user_id", nextUser.id);
       setIsAdmin(Boolean(data?.some(({ role }) => ["admin", "superadmin", "finance_admin"].includes(role))));
+      setIsPartner(Boolean(data?.some(({ role }) => role === "provider_member")));
     }
     void client.auth.getUser().then(({ data }) => refresh(data.user));
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => { void refresh(session?.user ?? null); });
@@ -67,6 +69,7 @@ export function Header({ locale, nav, auth }: Props) {
             {langOpen && <div className="lang-menu">{locales.map((item) => <button key={item} className={item === locale ? "active" : ""} onClick={() => switchLocale(item)}>{localeNames[item]}</button>)}</div>}
           </div>
           {isAdmin && <Link className="ghost-button desktop-only" href="/admin"><LayoutDashboard size={16} /> {nav.admin}</Link>}
+          {isPartner && <Link className="ghost-button desktop-only" href="/socios"><Briefcase size={16} /> {nav.partnerPanel}</Link>}
           {user
             ? <button className="ghost-button desktop-only" onClick={() => void supabase?.auth.signOut()} title={user.email ?? ""}><LogOut size={16} /> {nav.logout}</button>
             : <button className="ghost-button desktop-only" onClick={() => setAuthOpen(true)}>{nav.login}</button>}

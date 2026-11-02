@@ -14,6 +14,7 @@ export const ja: Dictionary = {
     publish: "宿泊施設を掲載",
     login: "ログイン",
     admin: "管理画面",
+    partnerPanel: "パートナー管理画面",
     logout: "ログアウト",
     menu: "メニューを開く",
     language: "言語",

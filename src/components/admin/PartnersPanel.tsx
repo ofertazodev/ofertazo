@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { es } from "@/i18n/dictionaries/es";
 import { PROPERTY_TYPES, type PropertyType } from "@/lib/listing";
 import { supabase } from "@/lib/supabase-browser";
+import { PartnerAccess, type PartnerAccessEntry } from "./PartnerAccess";
 
 export const PARTNER_TYPES = { hotel: "Hotel / alojamiento", owner: "Dueño de alojamiento", agency: "Agencia de turismo", tour_operator: "Operador de tours", other: "Otro" } as const;
 type PartnerType = keyof typeof PARTNER_TYPES;
@@ -50,6 +51,7 @@ export function PartnersPanel({ user, onNewOffer }: { user: User; onNewOffer: (p
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [access, setAccess] = useState<PartnerAccessEntry[]>([]);
 
   const load = useCallback(async () => {
     if (!supabase) return;
@@ -59,6 +61,8 @@ export function PartnersPanel({ user, onNewOffer }: { user: User; onNewOffer: (p
     ]);
     if (error) { setMessage(error.message); return; }
     setRows((data ?? []) as Partner[]);
+    const accessList = await supabase.rpc("partner_access_list");
+    setAccess((accessList.data ?? []) as PartnerAccessEntry[]);
     setCities(((destinations.data ?? []) as { name: string }[]).map((item) => item.name));
   }, []);
 
@@ -207,6 +211,7 @@ export function PartnersPanel({ user, onNewOffer }: { user: User; onNewOffer: (p
                       {(row.tax_id || row.address || row.legal_name !== row.trade_name) && (
                         <p className="admin-sub">{[row.legal_name !== row.trade_name ? `Razón social: ${row.legal_name}` : "", row.tax_id ? `NIT: ${row.tax_id}` : "", row.address ? `Dirección: ${row.address}` : ""].filter(Boolean).join(" · ")}</p>
                       )}
+                      <PartnerAccess providerId={row.id} entries={access.filter((entry) => entry.provider_id === row.id)} onChange={() => void load()} />
                       {row.products.length === 0 ? <p className="muted">Este socio todavía no tiene ofertas.</p> : (
                         <ul className="partner-offers">
                           {row.products.map((product) => (

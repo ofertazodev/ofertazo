@@ -24,6 +24,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except the admin panel, API routes, Next internals and static files.
-  matcher: ["/((?!admin|api|_next|.*\\..*).*)"]
+  // Everything except the admin and partner panels, API routes, Next internals and static files.
+  matcher: ["/((?!admin|socios|api|_next|.*\\..*).*)"]
 };

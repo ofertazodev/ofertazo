@@ -41,3 +41,16 @@ Registro de decisiones de Ofertazo Travel.
 - **Pendiente:** cuando exista inventario diario por tipo de habitación, pasar `room_options` a la tabla `room_types` del modelo completo.
 - **Idiomas:** se añaden portugués, alemán, chino, japonés y coreano a la interfaz. Los textos legales en esos idiomas muestran la versión en inglés hasta tener una traducción revisada.
 
+## ADR-0007: Panel de socios (/socios) con propuestas que solo el admin publica
+
+- **Estado:** aceptada (2026-11-01)
+- **Contexto:** hoteles, dueños de departamentos y empresas de turismo necesitan cargar sus alojamientos o paquetes (con habitaciones por piso y fotos) y ofrecernos un precio. El negocio exige que **ningún socio publique nada**: todo lo que envían es una propuesta que Tripya acepta, negocia o rechaza.
+- **Decisión:**
+  - Los socios trabajan en tablas propias de borrador (`partner_listings`, `partner_units`, `partner_media`) y envían precios con `submit_partner_proposal()` (`partner_proposals` + `partner_proposal_items`).
+  - La negociación es un chat por propuesta (`partner_messages`, Realtime).
+  - Solo `publish_partner_proposal()`, exclusiva del admin, crea el producto y la oferta públicos. Las fotos viven en el bucket privado `partner-media` y el admin las copia a `offer-media` al publicar.
+  - El acceso es por invitación: `grant_partner_access()` registra el email y `handle_new_user` lo vincula al crear la cuenta.
+  - Los estados son enums con transiciones validadas por trigger y solo cambian dentro de esas funciones.
+- **Consecuencia:** las políticas de escritura de `products`, `offers`, `product_media` e `inventory_units` pasan a ser solo del admin (antes un miembro del socio podía escribirlas), y los socios ya no leen `providers` directamente (contiene notas internas): usan `partner_me()`.
+- **Pendiente:** inventario diario por habitación a partir de `partner_units`; notificar por email o WhatsApp cuando haya mensajes nuevos.
+

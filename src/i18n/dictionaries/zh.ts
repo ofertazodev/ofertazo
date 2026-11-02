@@ -14,6 +14,7 @@ export const zh: Dictionary = {
     publish: "发布你的住宿",
     login: "登录",
     admin: "管理后台",
+    partnerPanel: "合作伙伴后台",
     logout: "退出登录",
     menu: "打开菜单",
     language: "语言",

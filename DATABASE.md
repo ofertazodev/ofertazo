@@ -57,6 +57,16 @@ Las migraciones iniciales ya fueron aplicadas al proyecto remoto mediante `npx s
 - Ejemplos: habitaciones y beneficios en el hotel de La Paz y el glamping de Uyuni, y el circuito «Salar de Uyuni 3 días / 2 noches» con itinerario y ruta.
 - Los idiomas nuevos (pt, de, zh, ja, ko) se aceptan en reservas, analítica y solicitudes.
 
+## Panel de socios
+
+`supabase/migrations/20261101000100_partner_portal.sql`:
+
+- **Borradores del socio:** `partner_listings` (hotel, departamento o paquete), `partner_units` (habitaciones por piso o la unidad única), `partner_media` (fotos en el bucket privado `partner-media`, carpeta `{provider_id}/{listing_id}/`).
+- **Negociación:** `partner_proposals` y `partner_proposal_items` (precio normal y precio para Tripya en centavos, por tipo de habitación), más el chat `partner_messages` (Realtime).
+- **Acceso:** `partner_invites`, `grant_partner_access()`, `revoke_partner_access()`, `partner_me()`, `partner_access_list()`.
+- **Flujo:** `submit_partner_proposal()` (socio), `withdraw_partner_proposal()` (socio), `decide_partner_proposal()` (admin: negociar o rechazar) y `publish_partner_proposal()` (solo admin, el único camino a la página).
+- **Endurecimiento:** escritura de `products`, `offers`, `product_media` e `inventory_units` solo para admins; `providers` solo lo leen su dueño y los admins.
+
 ## Siguiente migración
 
 El ledger de doble entrada, pagos, reembolsos, comisiones, cuentas bancarias y payouts deben añadirse en una migración separada, con pruebas de invariantes financieros antes de activar operaciones reales.

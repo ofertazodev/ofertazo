@@ -14,6 +14,7 @@ export const en: Dictionary = {
     publish: "List your property",
     login: "Log in",
     admin: "Admin panel",
+    partnerPanel: "Partner panel",
     logout: "Log out",
     menu: "Open menu",
     language: "Language",

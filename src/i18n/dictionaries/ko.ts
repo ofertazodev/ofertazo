@@ -14,6 +14,7 @@ export const ko: Dictionary = {
     publish: "숙소 등록하기",
     login: "로그인",
     admin: "관리자 패널",
+    partnerPanel: "파트너 패널",
     logout: "로그아웃",
     menu: "메뉴 열기",
     language: "언어",
