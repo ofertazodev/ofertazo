@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, Mail, MessageCircle, Pencil, Phone, Plus, RefreshCw, Save, Search, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, KeyRound, Mail, MessageCircle, Pencil, Phone, Plus, RefreshCw, Save, Search, Trash2, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { es } from "@/i18n/dictionaries/es";
 import { PROPERTY_TYPES, type PropertyType } from "@/lib/listing";
@@ -200,6 +200,9 @@ export function PartnersPanel({ user, onNewOffer }: { user: User; onNewOffer: (p
                     <span className={`status-pill ${row.status === "approved" ? "status-confirmed" : "status-expired"}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
                     <span className="admin-row-buttons">
                       <button onClick={() => setExpanded(isOpen ? null : row.id)} aria-expanded={isOpen}>{isOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />} {row.products.length === 1 ? "1 oferta" : `${row.products.length} ofertas`}</button>
+                      <button onClick={() => setExpanded(isOpen ? null : row.id)} title="Emails que pueden entrar a /socios">
+                        <KeyRound size={15} /> {access.some((entry) => entry.provider_id === row.id) ? "Acceso al panel ✓" : "Dar acceso al panel"}
+                      </button>
                       <button onClick={() => onNewOffer(row.id)}><Plus size={15} /> Nueva oferta</button>
                       <button onClick={() => startEdit(row)}><Pencil size={15} /> Editar</button>
                       <button onClick={() => void remove(row)} aria-label={`Eliminar ${row.trade_name}`}><Trash2 size={15} /></button>
