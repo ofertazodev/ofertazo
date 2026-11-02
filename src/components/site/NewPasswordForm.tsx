@@ -15,6 +15,8 @@ export function NewPasswordForm({ auth, homeHref }: { auth: Dictionary["auth"]; 
   const [state, setState] = useState<"checking" | "ready" | "invalid" | "saved">("checking");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  /** Partners and admins land on their panel after choosing the new password. */
+  const [panel, setPanel] = useState<{ href: string; label: string } | null>(null);
 
   useEffect(() => {
     if (!supabase) { setState("invalid"); return; }
@@ -37,6 +39,11 @@ export function NewPasswordForm({ auth, homeHref }: { auth: Dictionary["auth"]; 
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) { setMessage(error.message); return; }
+    const { data: auth } = await supabase.auth.getUser();
+    const { data: roles } = auth.user ? await supabase.from("user_roles").select("role").eq("user_id", auth.user.id) : { data: null };
+    const names = (roles ?? []).map(({ role }) => role as string);
+    if (names.some((role) => ["admin", "superadmin", "finance_admin"].includes(role))) setPanel({ href: "/admin", label: "Ir al panel admin" });
+    else if (names.includes("provider_member")) setPanel({ href: "/socios", label: "Ir a mi panel de socio" });
     setState("saved");
   }
 
@@ -53,7 +60,8 @@ export function NewPasswordForm({ auth, homeHref }: { auth: Dictionary["auth"]; 
     <div className="status-card">
       <span className="success-icon"><ShieldCheck /></span>
       <p>{auth.passwordSaved}</p>
-      <Link className="dark-button" href={homeHref}>Tripya <ArrowRight size={16} /></Link>
+      {panel && <Link className="dark-button" href={panel.href}>{panel.label} <ArrowRight size={16} /></Link>}
+      <Link className={panel ? "text-link" : "dark-button"} href={homeHref}>Tripya <ArrowRight size={16} /></Link>
     </div>
   );
 

@@ -26,6 +26,8 @@ export function PartnerApp() {
   const [user, setUser] = useState<User | null>(null);
   const [partners, setPartners] = useState<PartnerProfile[] | null>(null);
   const [loading, setLoading] = useState(true);
+  /** Arrived from the "forgot password" email: choose the new password before entering. */
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
@@ -33,17 +35,22 @@ export function PartnerApp() {
     async function check(nextUser: User | null) {
       setUser(nextUser);
       if (!nextUser) { setPartners(null); setLoading(false); return; }
+      setLoading(true);
       const { data } = await client.rpc("partner_me");
       setPartners(Array.isArray(data) ? (data as PartnerProfile[]) : []);
       setLoading(false);
     }
     void client.auth.getUser().then(({ data }) => check(data.user));
-    const { data: listener } = client.auth.onAuthStateChange((_event, session) => { void check(session?.user ?? null); });
+    const { data: listener } = client.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") setRecovering(true);
+      void check(session?.user ?? null);
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
   if (loading) return <main className="partner-page"><LlamaLoader size="lg" label="Cargando tu panel..." /></main>;
   if (!user) return <PartnerLogin />;
+  if (recovering) return <PartnerNewPassword onDone={() => setRecovering(false)} />;
   if (!partners || partners.length === 0) return <NotPartner email={user.email ?? ""} />;
   return <PartnerShell user={user} partner={partners[0]} />;
 }
@@ -67,6 +74,13 @@ function PartnerLogin() {
     if (mode === "signup" && !result.data.session) setMessage("Te enviamos un correo para confirmar tu cuenta. Confírmalo y vuelve a entrar.");
   }
 
+  async function forgot() {
+    if (!supabase) return;
+    if (!email.trim()) { setMessage("Escribe tu email y vuelve a pulsar «¿Olvidaste tu contraseña?»."); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/socios` });
+    setMessage(error ? error.message : "Si ese email tiene cuenta, te enviamos un enlace. Ábrelo y elige tu nueva contraseña: volverás directo a tu panel.");
+  }
+
   async function google() {
     if (!supabase) return;
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/socios` } });
@@ -88,10 +102,42 @@ function PartnerLogin() {
           {message && <p className="form-message">{message}</p>}
           <button className="dark-button cta form-button" disabled={busy}>{mode === "login" ? "Entrar" : "Crear mi acceso"} <ArrowRight size={17} /></button>
         </form>
+        {mode === "login" && <button type="button" className="modal-secondary" onClick={() => void forgot()}>¿Olvidaste tu contraseña?</button>}
         <button type="button" className="modal-secondary" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setMessage(""); }}>
           {mode === "login" ? "¿Primera vez? Crea tu acceso con el email que nos diste" : "Ya tengo acceso, quiero entrar"}
         </button>
         <Link className="text-link" href="/">Volver a Tripya</Link>
+      </div>
+    </main>
+  );
+}
+
+function PartnerNewPassword({ onDone }: { onDone: () => void }) {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!supabase) return;
+    const password = String(new FormData(event.currentTarget).get("password") ?? "");
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (error) { setMessage(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <main className="partner-page partner-gate-page">
+      <div className="partner-gate">
+        <TripyaLogo className="brand-logo" />
+        <PartnerLlama size="lg" message={<>Elige tu nueva contraseña y te llevo a tu panel.</>} />
+        <h1>Nueva contraseña</h1>
+        <form className="partner-login" onSubmit={save}>
+          <label>Contraseña nueva<input name="password" type="password" required minLength={8} autoComplete="new-password" placeholder="Mínimo 8 caracteres" /></label>
+          {message && <p className="form-message">{message}</p>}
+          <button className="dark-button cta form-button" disabled={busy}>Guardar y entrar <ArrowRight size={17} /></button>
+        </form>
       </div>
     </main>
   );
